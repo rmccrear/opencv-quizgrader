@@ -1,0 +1,28 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+
+# user data
+score_data
+notebooks
+
+# jupyter notebooks
+*.ipynb
+
+# local scripts
+scripts
+
+# js
+node_modules
+
+MNIST-data/
+mnist_convnet_model/
+mnist_model.tar
+raw_pdfs/
+users/
+*.mp4
+
+# os
+.DS_Store
+*.swp

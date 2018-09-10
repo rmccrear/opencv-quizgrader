@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  New Quiz
+{% endblock %}
+{% block head %}
+<style>
+  input {
+    font-size: 25pt;
+  }
+  li {
+    list-style: none;
+  }
+  img.ans-item {
+    height: 5em;
+  }
+
+</style>
+<script>
+  function capIt(){
+    const inputs = document.querySelectorAll("input[type=text]")
+    for(let i=0; i<inputs.length; i++){
+      input = inputs[i];
+      input.value = input.value ? input.value.toUpperCase() : input.value;
+    }
+  }
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <div class="card">
+    <div class="card-body">
+      Set answer key for {{quiz_name}}
+    </div>
+  </div>
+
+<form method="post">
+  <H2> Answer key for {{quiz_name}} </H2>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">
+      Image from Answer Key
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      Please key-in the answer manually from the answer key.
+    </li>
+  {% for item in items%}
+    <li class="list-group-item">
+      <img class="ans-item" src="{{item["src"]}}"> <input type="text" name="answer_{{item["item_no"]}}" value="{{item["value"]}}">
+    </li>
+  {% endfor %}
+  </ul>
+  <p>
+    <a href="#" onclick="capIt()"> answers to all caps </a> <-- (click to conviently convert all answer to all caps)
+  </p>
+  <p>
+    <input class="btn btn-primary" type="submit">
+  </p>
+  <p>
+  <a href="/quiz/{{username}}/{{quiz_name}}"> back to quiz </a>
+  </p>
+</form>
+</div>
+{% endblock %}

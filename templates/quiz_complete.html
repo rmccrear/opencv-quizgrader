@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}
+Imported Quiz {{quiz_name}}
+{% endblock  %}
+{% block head %}
+<style>
+img.error-img {
+  width: 300px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <p>
+  Finished processing quiz {{quiz_name}}
+  <p>
+  <a class="btn btn-primary" href="/quiz/{{username}}/{{quiz_name}}"> go to quiz</a>
+  </p>
+<table class="table">
+  <thead>
+    <tr>
+      <th> Errors in processing are listed below. </th> <th> &nbsp; </th> <th>Corrected with default. </th>
+    </tr>
+  </thead>
+  {%for sheet_no in error_sheet_nos%}
+  <tr>
+    <td>
+      <img class="error-img" src='/error-img/{{username}}/{{quiz_name}}/{{sheet_no}}.png'>
+    </td>
+    <td>
+      <p>#{{sheet_no}}</p>
+      <p> &rarr; </p>
+    </td>
+    <td>
+      <img class="error-img" src='/error-corrected-img/{{username}}/{{quiz_name}}/{{sheet_no}}.png'>
+    </td>
+
+  </tr>
+  {%endfor%}
+</table>
+
+</div>
+
+{% endblock %}

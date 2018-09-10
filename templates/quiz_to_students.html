@@ -1,0 +1,177 @@
+<style>
+.quiz-to-student-header-container {
+  border: solid 1px;
+}
+.header-datum-container {
+  display: inline-block;
+}
+.header-input-display-container{
+  width: 200px;
+}
+.header-input-container {
+  display: inline-block;
+}
+input {
+padding: 9px;
+font-size: 20px;
+}
+.dups {
+  color: red;
+}
+.missing {
+  color: red;
+}
+</style>
+  <script>
+    const findDups = (idList) => {
+      const idSet = new Set();
+      const dups = new Set();
+      idList.forEach((id)=> idSet.has(id) ? dups.add(id) : idSet.add(id))
+      return Array.from(dups);
+    }
+    const findMissing = (idList) => {
+      const rosterIds = roster_list.map((s)=> s.student_id);
+      const enteredIds = new Set(idList);
+      const missing = new Set();
+      rosterIds.forEach((id) => enteredIds.has(id) ? '' : missing.add(id))
+      return Array.from(missing);
+    }
+
+    const endpoint = '/save-students-for-quiz/{{username}}/{{quiz_name}}';
+    const roster_list = {{json_roster | safe}};
+    let   defaultStudentIds = {{sheet_no2student_id | safe}};
+    const roster = roster_list.reduce( (r, student) => (r[student.student_id] = student, r), {});
+    const search_terms_for_stu = roster_list.map( (s) => ({searchable: s.student_id + s.name, id: s.student_id}));
+    const searchRoster = (term) => {
+      const matches = search_terms_for_stu.filter( terms => terms.searchable.includes(term) );
+      if(matches.length > 0) {
+        return matches.map((searchable) => searchable.id);
+      }
+      else { // no matches
+        return undefined;
+      }
+    };
+    const searchAndSet = (term, sheet_no) => {
+      const matches = searchRoster(term);
+      console.log(matches);
+      if(matches && matches.length === 1 ) {
+        const student_id = matches[0];
+        const input = document.querySelector(`#header-${sheet_no}`);
+        input.value = student_id;
+        const headerData = roster[student_id];
+        setHeaderDataFor(sheet_no, headerData);
+        input.blur();
+      }
+      else {
+        clearHeaderDataFor(sheet_no);
+      }
+    }
+    const onChange = function(){
+        const val = this.value;
+        const sheetNo = this.attributes['data-sheet_no'].value;
+        searchAndSet(val, sheetNo);
+    }
+    const clearHeaderDataFor = (sheetNo) => {
+      const elm = document.querySelector(`#header-data-display-${sheetNo}`);
+      elm.innerHTML = '---';
+    }
+    const setHeaderDataFor = (sheetNo, headerData) => {
+      console.log(headerData)
+      const headerElms = [];
+      const headerD = headerData ? Object.keys(headerData).map((k)=>`${k}: ${headerData[k]}`) : ['--','--','--'];
+
+      const elm = document.querySelector(`#header-data-display-${sheetNo}`);
+      elm.innerHTML = headerD.join(" | ")
+    }
+    const setDefaults = function(inputs){
+      for(let i = 0; i < inputs.length; i++){
+        const input = inputs[i];
+        const sheetNo = input.attributes['data-sheet_no'].value;
+        if(sheetNo < defaultStudentIds.length){
+          const student_id = defaultStudentIds[sheetNo]
+          const elm = document.getElementById(`header-${sheetNo}`);
+          elm.value = student_id;
+          if(student_id) setHeaderDataFor(sheetNo, roster[student_id]);
+          // const student = roster_list[sheetNo-2]; // 2 since the first two sheets are blank, and answer key
+        }
+      }
+    } 
+    const getAllInputData = () => {
+      const inputs = document.querySelectorAll('.student-id-input');
+      input_values = [];
+      for(let i = 0; i < inputs.length; i++){
+        const input = inputs[i];
+        const sheetNo = parseInt(input.attributes['data-sheet_no'].value, 10);
+        input_values[sheetNo] = input.value;
+      }
+      console.log(input_values);
+      return input_values;
+    }
+    const sendInputData = () => {
+      const data = getAllInputData();
+      //const post_data = Object.keys(data).map((key)=> [key, data[key]])
+      //  .map(pair => encodeURIComponent(''+pair[0]) + '=' + encodeURIComponent(''+pair[1]) )
+      //  .join('&'); 
+      //console.log(post_data);
+      fetch(endpoint, {
+        method: 'post',
+        headers: {
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      }).then((results) => {
+        return(results.json());
+      }).then((json)=>{
+        defaultStudentIds = json;
+        const missingAndDups = checkAndSetDupsAndMissing();
+        alert(`missing: ${missingAndDups.missing} \n duplicates: ${missingAndDups.dups}`);
+      });
+    };
+    function checkAndSetDupsAndMissing() {
+      const dups = findDups(defaultStudentIds);
+      const dupsStr = "duplicates: " + dups.join(' , ');
+      document.querySelector('.dups').innerHTML = dupsStr;
+
+      const missing = findMissing(defaultStudentIds);
+      const missingStr = "missing: " + missing.join(' , ');
+      document.querySelector('.missing').innerHTML = missingStr;
+      return {missing: missing, dups: dups};
+    }
+    document.addEventListener('DOMContentLoaded', function(){
+      const inputs = document.querySelectorAll('.student-id-input');
+      setDefaults(inputs);
+      for(let i = 0; i < inputs.length; i++){
+        const input = inputs[i];
+        input.addEventListener('input', onChange);
+      }
+      document.querySelector('#submit-students').addEventListener('click', sendInputData);
+      missingAndDups = checkAndSetDupsAndMissing();
+    });
+    
+  </script>
+{%for headers in quiz_headers%}
+<div class="quiz-to-student-header-container">
+  {%for i in range(headers["length"])%}
+    <div class="header-datum-container">
+      <p> <img class="quiz-to-student-header" "header-{{i}}" src="{{headers.imgs[i].img_src}}"> </p>
+      <p> <span class="header-data header-data-{{headers["sheet_no"]}}" id="header-data-{{headers["sheet_no"]}}-{{i}}">{{headers.data[i]}}</span> </p>
+    </div>
+    {%endfor%}
+
+  <a href="/sheet-img/{{username}}/{{quiz_name}}/{{headers["sheet_no"]}}.jpeg")" target="_new" tabindex="-1"> (sheet) </a>
+  <div class="header-input-container">
+    <div class="header-input-display-container">
+      <p> <span id="header-data-display-{{headers["sheet_no"]}}"></span> </p>
+    </div>
+    <p> <input onClick="this.select();" class="student-id-input" data-sheet_no="{{headers['sheet_no']}}" type="text" name="header-{{headers['sheet_no']}}" id="header-{{headers['sheet_no']}}" value="{{headers.data[i]}}" tabindex="0"> </p>
+  </div>
+</div>
+{%endfor%}
+<p>
+  <span class="dups"></span>
+</p>
+<p>
+  <span class="missing"></span>
+</p>
+<button id="submit-students">Submit Student IDs</button>
+<p> <a href="/quiz/{{username}}/{{quiz_name}}"> back to quiz </a></p>

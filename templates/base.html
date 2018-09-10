@@ -1,0 +1,35 @@
+<!doctype html>
+<head>
+<title>{% block title %}{% endblock %} - Quiz Grader</title>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<style>
+  /* a:visited:not(.btn) { color: #551A8B; } */
+
+  a:visited{
+    color: initial; 
+    text-decoration: underline;
+  }
+  a.btn:visited { color: #333; }
+  a.btn-danger:visited { color: #fff; }
+  a.btn-primary:visited { color: #fff; }
+</style>
+
+{% block head %}{%endblock%}
+
+</head>
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    {% if username %}
+    <li class="breadcrumb-item"><a href="/quizzes/{{ username }}"> {{ username }} </a>
+      </li>
+    {% endif %}
+    {% if username and quiz_name %}
+    <li class="breadcrumb-item"><a href="/quiz/{{ username }}/{{ quiz_name }}">  {{quiz_name}} </a> 
+      </li>
+    {% endif %}
+  </ol>
+</nav>
+<section class="content">
+  {% block content %}{% endblock %}
+</section>

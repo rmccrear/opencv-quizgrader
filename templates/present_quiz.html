@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Quiz: {{quiz_name}}
+{% endblock %}
+
+
+{% block content %}
+<div class="container">
+
+<h1> Quiz: {{quiz_name}} </h1>
+<p>
+  You may grade by answer or by item. Grading by answer allows you to grade all items with the same answer at the same time. Grading by item limits you to one item at a time. After you finish grading, you may set student ids if you have supplied a roster for the class. Then you can click Finish Quiz to create the graded jpgs and pdfs. Finally, you can download the CSV for scores.
+</p>
+
+<hr>
+<h1> Step 1: Grade </h1>
+<h2> Grade by answer </h2>
+<ul class="list pagination">
+{%for answer in answers%}
+  <li class="page-item">
+    <a class="page-link"  href="/items-for-value/{{username}}/{{quiz_name}}/{{answer | urlencode_component}}">{{answer}}</a>
+  </li>
+{%endfor%}
+</ul>
+<p> Set answer key: <a href="/quiz-answer-key/{{username}}/{{quiz_name}}" class="btn btn-outline-dark"> go to set answer key</a> </p>
+
+<h2> <u>or</u>: Grade by item </h2>
+<div style="width: 80%;">
+<nav>
+  <ul class="pagination">
+  {%for item_no in item_nos%}
+    <li class="item page-item">
+      <a class="page-link"  href="/items/{{username}}/{{quiz_name}}/{{item_no}}">{{item_no+1}}</a>
+    </li>
+  {%endfor%}
+  </ul>
+</nav>
+</div>
+
+<p>
+Set answer key: <a href="/quiz-answer-key/{{username}}/{{quiz_name}}" class="btn btn-outline-dark"> go to set answer key</a>
+</p>
+<hr>
+<h1> Step 2: Student names and ids </h1>
+<p> Set Rosters in score_data/{username}/my_courses/{semester}/{course_id}/roster.csv </p>
+<p>
+Set student ids: <a class="btn btn-outline-dark" href="/quiz-headers/{{username}}/{{quiz_name}}/{{semester}}/{{course_name}}"> go to set student ids</a>
+</p>
+
+<p>
+Finish Quiz when grading is complete: <a class="btn btn-outline-dark" href="/finish-quiz/{{username}}/{{quiz_name}}"> submit </a> <span class="text-muted"> (May take a few minutes) <span>
+</p>
+
+<hr>
+<h1> Step 3: Access Results </h1>
+<p>
+Overlay: <a href="/finished-quiz/overlay/{{username}}/{{quiz_name}}/{{quiz_name}}.pdf"> Overlay PDF </a>
+    <p>
+Overlay: <a href="/finished-quiz/reversed-overlay/{{username}}/{{quiz_name}}/{{quiz_name}}.pdf"> Overlay PDF (reversed) </a>
+<p>
+Graded: <a href="/finished-quiz/graded/{{username}}/{{quiz_name}}/{{quiz_name}}.pdf"> Graded PDF </a>
+</p>
+<p>
+CSV score spreadsheet: <a href="/quiz-scores/{{username}}/{{quiz_name}}.csv"> CSV </a>
+</p>
+</div>
+{% endblock %}

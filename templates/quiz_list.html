@@ -1,0 +1,37 @@
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<style>
+  a:visited{
+    color: initial; /*#551A8B; */
+    text-decoration: underline;
+  }
+  a.btn:visited { color: #333; }
+  a.btn-danger:visited { color: #fff; }
+  a.btn-primary:visited { color: #fff; }
+
+</style>
+<br>
+<div class="container">
+<p>Choose quiz or create new. </p>
+<table class="table">
+  <thead>
+    <tr>
+    <th> Quiz Name </th> <th> &nbsp; </th>
+    </tr>
+  </thead>
+  {%for quiz_name in quizzes%}
+  <tr>
+    <td>
+      <a href='/quiz/{{username}}/{{quiz_name}}'> {{quiz_name}} </a>
+    </td>
+    <td>
+      &nbsp;&nbsp;&nbsp;&nbsp; <a href='/reprocess-quiz/{{username}}/{{quiz_name}}'>   reprocess ↻ </a>
+    </td>
+
+  </tr>
+  {%endfor%}
+</table>
+
+<p>
+  <a class="btn btn-primary"  href="/new-quiz/{{username}}"> New Quiz </a>
+</p>
+</div>

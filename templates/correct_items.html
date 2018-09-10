@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Quiz: {{quiz_name}}
+{% endblock %}
+
+{% block head %}
+<style>
+    body {
+      background-color: slategray;
+    }
+    .scoring-container {
+      display: table;
+      width: 100%;
+      height: 100%;
+  }
+
+    .items-list-container {
+      display: table-cell;
+      width: 100px;
+      backround-color: #BC9F77; /*salmon;*/
+    }
+    li.item {
+      background-color: #95A0AA; /* slategray; */
+    }
+
+    li.item.incorrect {
+      background-color: crimson;
+    }
+    .current-sheet-container-outer {
+      /*background-color: goldenrod;*/
+      display: table-cell;
+      position: fixed;
+      top: 50px;
+      left: 255px;
+    }
+    .current-sheet-container-inner {
+      position: relative;
+      border: solid;
+    } 
+  
+    #current-sheet-img {
+      z-index: 1;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .item-in-sheet {
+      position: absolute;
+      display: none;
+      z-index: 999;
+      width: 100px;
+      height: 100px;
+      border: dotted green;
+      color: green;
+      border-width: 15px;
+    }
+    .item-in-sheet.incorrect {
+      border: dotted red;
+      color: red;
+      border-width: 15px;
+    }
+    .item-in-sheet.show-it {
+      display: block;
+    }
+    .answer-value-label {
+      color: slategrey;
+    }
+    .answer-value {
+      color: red;
+      background-color: #CACFD3; /*salmon;*/
+      padding: 3px;
+      position: relative;
+    }
+    .item-container img {
+      /*width: 80px;*/
+      height: 50px;
+    }
+    /*
+    img#current-sheet-img {
+      width: 800px;
+    }
+    */
+    .current-sheet-container-inner {
+      transform: scale(0.3);
+      /* transform: scale(0.1); */
+    }
+    .hidden {
+      display: none;
+    }
+    #toggleCurrent{
+      color: white;
+    }
+    
+    ul.nav li {
+      background-color: #CACFD4;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container"> 
+  <br><br><br>
+<div class="card">
+  <div class="card-body">
+  Click on an item to mark it correct or incorrect.
+  </div>
+</div>
+<br>
+
+<ul class="nav" id="correction-nav" role="tablist">
+  <li id="show-both-correct-and-incorrect" role="presentation" class="nav-item"> <a class="nav-link" role="tab" href="#"> show all </a> </li>
+  <li id="show-correct" role="presentation" class="nav-item"> <a  class="nav-link" role="tab" href="#">show correct</a> </li>
+  <li id="show-incorrect" role="presentation" class="nav-item"> <a class="nav-link" role="tab" href="#"> show incorrect </a> </li>
+</ul>
+<button id="toggleType"> toggle hide or show </button>
+<br>
+<div id="toggleCurrent">showing all</div>
+<br>
+<div class="scoring-container container">
+  <div class="items-list-container">
+    <ul class="list-group">
+    {% for item in items %}
+    <li class="list-group-item item {%if item['value'] == '0' %} incorrect {%endif%} {%if item['value'] == '1'%} correct{%endif%} item-{{item['username']}}-{{item['quiz_name']}}-{{item['sheet_no']}}-{{item['item_no']}}" 
+                     data-item-no="{{item['item_no']}}"
+                     data-sheet-no="{{item['sheet_no']}}"
+                     data-value="{{item['value']}}" 
+                     data-username="{{item['username']}}"
+                     data-quiz-name="{{item['quiz_name']}}"
+                     >
+                     <div class="item-container">
+                      <img src="{{item['src']}}">
+                     </div>
+    </li>
+    {% endfor %}
+    </ul>
+  </div>
+    <div class="current-sheet-container-outer">
+      <div class="answer-value"> <h2> <span class="answer-value-label"> correct answer: </span>  {{answer_value}} </h2> </div>
+      <div class="current-sheet-container-inner">
+          <img id="current-sheet-img">
+          {%for item in items_in_sheets%}
+          <div class="item item-in-sheet {%if item['value'] == '0' %} incorrect {%endif%} {%if item['value'] == '1'%} correct{%endif%} {{item['id_classes'][0]}} {{item['id_classes'][1]}}"
+            style="left:{{item['bounding_box'][0]}}px; top:{{item['bounding_box'][1]}}px; width: {{item['bounding_box'][2]-item['bounding_box'][0]}}px; height: {{item['bounding_box'][3]-item['bounding_box'][1]}}px;"
+                     >
+                     {{item['correct_answer']}}
+                     {% if item['value'] == 0 %} X {%endif%}
+                     <br>
+            </div>
+          {%endfor%}
+      </div>
+    </div>
+</div>
+
+</div>
+<script src="https://unpkg.com/jquery@3.3.1/dist/jquery.js"> </script>
+<script>
+
+  function genItemId(username, quiz_name, sheet_no, item_no){
+    var id = "item-" + username + "-" + quiz_name + "-" + sheet_no + "-" + item_no;
+    return id;
+  }
+
+  var AUTH_TOKEN = window.localStorage.getItem('quizgrader_auth_token');
+
+  var toggleLastItem = (function tli() {
+    var lastItemId = '';
+    return function toggle_last_item(nextItemId){
+      if(lastItemId) {
+        $("." + lastItemId).toggleClass('show-it');
+      }
+      lastItemId =  nextItemId;
+    };
+  })();
+
+  function setItemCorrectionInDOM(username, quiz_name, sheet_no, item_no, value){
+    var id = "item-" + username + "-" + quiz_name + "-" + sheet_no + "-" + item_no;
+    $("." + id).toggleClass("correct").toggleClass("incorrect").data("value", value);
+    //$(".item-for-sheet-no-" + sheet_no).css({'display': 'block'})
+    console.log(".item-in-sheet ." + id);
+    toggleLastItem(id);
+    $(".item-in-sheet." + id).toggleClass('show-it');
+  }
+  function setItemCorrection(username, quiz_name, sheet_no, item_no, value){
+    setItemCorrectionInDOM(username, quiz_name, sheet_no, item_no, value);
+    var url = `/corrections/set/${username}/${quiz_name}/${sheet_no}/${item_no}/${value}`;
+    $.ajax({
+      url: url,
+      headers: {
+        'Authorization': AUTH_TOKEN
+      }
+    });
+  }
+  const toggleTypes = [
+    "incorrect", "correct", "all"
+  ];
+  let toggleIndex = 2;
+  function showCorrectOrIncorrect(action){
+    if(action === "incorrect") {
+      $(".incorrect").removeClass("hidden");
+      $(".correct").addClass("hidden");
+    }
+    else if(action === "correct"){
+      $(".incorrect").addClass("hidden");
+      $(".correct").removeClass("hidden");
+    }
+    else if(action === "all"){
+      $(".incorrect").removeClass("hidden");
+      $(".correct").removeClass("hidden");
+    }
+    $('#toggleCurrent').text("showing " + action);
+
+  }
+  function toggleHidden(){
+    toggleIndex = (toggleIndex + 1) % toggleTypes.length
+    const action = toggleTypes[toggleIndex];
+    showCorrectOrIncorrect(action);
+  }
+  $(function(){
+    $('#toggleType').on("click", toggleHidden);
+    $('#show-correct').on('click', ()=>showCorrectOrIncorrect('correct'))
+    $('#show-incorrect').on('click', ()=>showCorrectOrIncorrect('incorrect'))
+    $('#show-both-correct-and-incorrect').on('click', ()=>showCorrectOrIncorrect('all'))
+    $("li.item").on("click", function(){
+      var item_no = $(this).data('item-no');
+      var sheet_no = $(this).data('sheet-no');
+      var username = $(this).data('username');
+      var quiz_name = $(this).data('quiz-name');
+      var value = $(this).data('value');
+      //$(this).toggleClass('incorrect');
+      //$(this).toggleClass('correct');
+      if(value === '1' || value === 1) {value = '0'}
+      else              {value = '1'}
+      //$(this).data('value', value);
+      setItemCorrection(username, quiz_name, sheet_no, item_no, value);
+      $('#current-sheet-img').attr('src', `/sheet-img/${username}/${quiz_name}/${sheet_no}.jpeg`)
+    })
+  });
+</script> 
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+{% endblock %}
