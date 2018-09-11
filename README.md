@@ -60,3 +60,11 @@ Finally, Run local server
 ```
 FLASK_APP=server.py flask run --host=HOSTNAME --port=5000
 ```
+
+## Setup
+
+cd into the directory. Run the add_user script to set up a user.
+```
+python ./add_user.py
+```
+
