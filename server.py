@@ -1,7 +1,7 @@
 from flask import Flask
 from flask import send_file
 from flask import render_template
-from flask import request, Response
+from flask import request, Response, redirect
 import csv
 import json
 import urllib
@@ -96,15 +96,27 @@ def quiz_scores(username, quiz_name):
     # return send_file(csv_path, mimetype='text/csv') 
 
 
-
+import time
 @app.route("/finish-quiz/<username>/<quiz_name>")
 def finish_graded_quiz(username, quiz_name):
+    t1 = time.perf_counter() 
     set_scores_for_quiz(username, quiz_name)
+    t2 = time.perf_counter() 
+    print('set_scores done in {}'.format(float(t2-t1)))
+
+    t1 = time.perf_counter() 
     save_graded_sheets_for_quiz(username, quiz_name)
+    t2 = time.perf_counter() 
+    print('save graded sheets done in {}'.format(float(t2-t1)))
+
+    t1 = time.perf_counter() 
     convert_graded_to_pdf(username, quiz_name)
-    overlay_url = "/finished-quiz/overlay/{}/{}/{}--overlay.pdf".format(username, quiz_name, quiz_name)
-    graded_url = "/finished-quiz/graded/{}/{}/{}--graded.pdf".format(username, quiz_name, quiz_name)
-    redirect('/quiz/{}/{}'.format(username, quiz_name))
+    t2 = time.perf_counter() 
+    print('convert graded sheets done in {}'.format(float(t2-t1)))
+
+    return redirect('/quiz/{}/{}'.format(username, quiz_name))
+    #overlay_url = "/finished-quiz/overlay/{}/{}/{}--overlay.pdf".format(username, quiz_name, quiz_name)
+    #graded_url = "/finished-quiz/graded/{}/{}/{}--graded.pdf".format(username, quiz_name, quiz_name)
     #return "<p> graded " + "<p><a href='{}'> overlay </a>".format(overlay_url) + "<p><a href='{}'> graded </a>".format(graded_url) 
 
 @app.route("/finished-quiz/<grade_format>/<username>/<quiz_name>/<file_name>")
@@ -201,10 +213,12 @@ def serve_header_img(username, quiz_name, sheet_no, header_no):
 # MARK: headers and students
 @app.route("/quiz-headers/<username>/<quiz_name>/<semester>/<course>")
 def quiz_to_students(username, quiz_name, semester, course):
-    roster = get_roster(username, semester, course)
-    print(roster)
+    roster = ''
+    try:
+        roster = get_roster(username, semester, course)
+    except:
+        return './score_data/{}/my_courses/{}/{}/roster.csv not found, please create it.'.format(username, semester, course)
     json_roster = json.dumps(roster)
-    print(json_roster)
     header_count = count_headers(username, quiz_name)
     sheet_count = count_sheets(username, quiz_name)
     quiz_headers = []
@@ -280,7 +294,14 @@ def get_correction(username, quiz_name, sheet_no, item_no):
 def serve_items(username, quiz_name, item_no):
     items = make_items(username, quiz_name, item_no)
     items_in_sheets = make_corrections(username, quiz_name)
-    return render_template("correct_items.html", items=items, items_in_sheets=items_in_sheets)
+    answer_value = ''
+    try:
+        answer_value = get_answer_key(username, quiz_name)[item_no]
+    except:
+        url = '/quiz-answer-key/{}/{}'.format(username, quiz_name)
+        return 'Please go to set answer key first <a href="{}"> (go) </a>'.format(url)
+
+    return render_template("correct_items.html", items=items, items_in_sheets=items_in_sheets, answer_value=answer_value)
 
 @app.route("/items-for-value/<username>/<quiz_name>/<path:answer_value>")
 def serve_items_for_particular_answer(username, quiz_name,  answer_value):

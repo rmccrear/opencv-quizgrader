@@ -17,6 +17,9 @@ CORR_LEFT_OFFSET = 2 # offset in corrections file
 def quiz_loc(username, quiz_name, data_path=DATA_PATH):
     return "{}/{}/processed_quizzes/{}/".format(data_path, username, quiz_name)
 
+#def user_loc(username, data_path=DATA_PATH):
+#    return "{}/{}/".format(data_path, username)
+
 def quizzes_for_user(username, data_path=DATA_PATH):
     path = "{}/{}/processed_quizzes/".format(data_path, username)
     dirs = os.listdir(path)
@@ -279,11 +282,11 @@ def find_sheet_dims(username, quiz_name, sheet_no, data_path=DATA_PATH):
 import os
 def ensure_dir(file_path):
     d = os.path.dirname(file_path)
-    if not os.path.exists(d):
+    if not os.path.isdir(d):
         print('creating {}'.format(d))
         os.makedirs(d)
-    # else:
-    #    print('dir already exists: {}'.format(d))
+    else:
+        print('dir already exists: {}'.format(d))
 
 def create_quiz_directory_structure(username, quiz_name):
     quiz_path = quiz_loc(username, quiz_name)

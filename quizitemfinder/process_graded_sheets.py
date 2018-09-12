@@ -4,8 +4,28 @@ import csv
 from PIL import Image, ImageDraw, ImageFont
 import subprocess
 
-FONT_PATH = path.join('/System/Library/Fonts', 'NoteWorthy.ttc')
+import fontconfig
+
+import quizitemfinder.io as io
+
+# FONT_PATH = path.join('/System/Library/Fonts', 'NoteWorthy.ttc')
 DATA_PATH = path.join('/Users/robertmccreary/Documents/code/proj/python/quiz_grader_server_python/score_data')
+
+font_preference = ['NoteWorthy', 'Gamja Flower', 'arial']
+def get_font_path(font_preference=font_preference):
+    path = None
+    n = 0
+    while n<len(font_preference) and path is None:
+        font_family = font_preference[n]
+        fonts = fontconfig.query(family=font_family ,lang='en')
+        if(len(fonts)>1):
+            path = fonts[0].file
+        n = n+1
+    if(path is None):
+        raise Exception('Could not find font. Tried [{}]'.format(", ".join(font_preference)))
+    return path
+FONT_PATH = get_font_path()
+
 
 def score_position_and_font_size(username, quiz_name):
     bb = get_bounding_boxes_for_quiz(username, quiz_name)[0] # first item's box
@@ -96,59 +116,44 @@ def marking_position_and_font_size(username, quiz_name):
 
 
 def get_bounding_boxes_for_quiz(username, quiz_name):
-    file_path = path.join(DATA_PATH, username, 'processed_quizzes', quiz_name, 'scoring', 'cv_data.json')
-    #filename = "./score_data/{0}/processed_quizzes/{1}/scoring/cv_data.json".format(username, quiz_name)
-    data = {}
-    with open(file_path) as data_file:    
-        data = json.load(data_file)
+    data = io.get_CV_data(username, quiz_name)
     return data["bounding_boxes"]
 
 def get_header_boxes_for_quiz(username, quiz_name):
-    file_path = path.join(DATA_PATH, username, 'processed_quizzes', quiz_name, 'scoring', 'cv_data.json')
-    #filename = "./score_data/{0}/processed_quizzes/{1}/scoring/cv_data.json".format(username, quiz_name)
-    data = {}
-    with open(file_path) as data_file:    
-        data = json.load(data_file)
+    data = io.get_CV_data(username, quiz_name)
     return data["header_boxes"]
 
 
 def get_answer_key(username, quiz_name):
-    file_path = path.join(DATA_PATH, username, 'processed_quizzes', quiz_name, 'scoring', 'answer_key.json')
-    #filename = "./score_data/{0}/processed_quizzes/{1}/scoring/answer_key.json".format(username, quiz_name)
-    with open(file_path) as data_file:    
-        data = json.load(data_file)
-    return data
+    return io.get_answer_key(username, quiz_name)
 
 def get_corrections(username, quiz_name):
-    file_path = path.join(DATA_PATH, username, 'processed_quizzes', quiz_name, 'scoring', 'corrections.csv')
-    #filename = "./score_data/{0}/processed_quizzes/{1}/scoring/corrections.csv".format(username, quiz_name)
-    rows = []
-    with open(file_path) as f:
-        reader = csv.reader(f)
-        for row in reader:
-            rows.append(row[2:])
-    return rows
+    return io.get_corrections(username, quiz_name)
+
 
 def get_id_and_score(username, quiz_name):
-    file_path = path.join(DATA_PATH, username, 'processed_quizzes', quiz_name, 'scoring', 'corrections.csv')
-    #filename = "./score_data/{0}/processed_quizzes/{1}/scoring/corrections.csv".format(username, quiz_name)
-    rows = []
-    with open(file_path) as f:
-        reader = csv.reader(f)
-        for row in reader:
-            rows.append(row[:2])
-    return rows
+    return io.get_scores_for_quiz(username, quiz_name)
+    #file_path = path.join(DATA_PATH, username, 'processed_quizzes', quiz_name, 'scoring', 'corrections.csv')
+    ##filename = "./score_data/{0}/processed_quizzes/{1}/scoring/corrections.csv".format(username, quiz_name)
+    #rows = []
+    #with open(file_path) as f:
+    #    reader = csv.reader(f)
+    #    for row in reader:
+    #        rows.append(row[:2])
+    #return rows
 
 
 def get_sheet_count(username, quiz_name):
-    corrections = get_corrections(username, quiz_name)
-    sheet_count = len(corrections)
-    return sheet_count
+    return io.count_sheets(username, quiz_name)
+    #corrections = get_corrections(username, quiz_name)
+    #sheet_count = len(corrections)
+    #return sheet_count
 
 def get_sheet_img(username, quiz_name, sheet_no):
-    file_path = path.join(DATA_PATH, username, 'processed_quizzes', quiz_name, 'sheets', 'img-' + str(sheet_no) + '.jpeg')
-    img = Image.open(file_path)
-    return img
+    return io.open_sheet_img(username, quiz_name, sheet_no)
+    #file_path = path.join(DATA_PATH, username, 'processed_quizzes', quiz_name, 'sheets', 'img-' + str(sheet_no) + '.jpeg')
+    #img = Image.open(file_path)
+    #return img
 
 
 
@@ -249,18 +254,21 @@ def trim_padding_on_sheet(sheet_img):
     )
 
 def save_graded_sheets_for_quiz(username, quiz_name):
+    quiz_dir = io.quiz_loc(username, quiz_name)
     graded_sheets = draw_answers_for_quiz(username, quiz_name)
     for sheet_no, graded_sheet in enumerate(graded_sheets):
-        file_path = path.join(DATA_PATH, username, 'processed_quizzes', quiz_name, 'sheets-graded', 'graded-sheets','graded-sheet-' + str(sheet_no) + '.jpeg')
+        file_path = path.join(quiz_dir, 'sheets-graded', 'graded-sheets','graded-sheet-' + str(sheet_no) + '.jpeg')
         graded_sheet.save(file_path, "JPEG")
     graded_sheets = draw_answers_for_quiz(username, quiz_name, on_blank=True)
     for sheet_no, graded_sheet in enumerate(graded_sheets):
-        file_path = path.join(DATA_PATH, username, 'processed_quizzes', quiz_name, 'sheets-graded', 'graded-overlays','graded-overlay-' + str(sheet_no) + '.jpeg')
+        #file_path = path.join(DATA_PATH, username, 'processed_quizzes', quiz_name, 'sheets-graded', 'graded-overlays','graded-overlay-' + str(sheet_no) + '.jpeg')
+        file_path = path.join(quiz_dir, 'sheets-graded', 'graded-overlays','graded-overlay-' + str(sheet_no) + '.jpeg')
         graded_sheet = trim_padding_on_sheet(graded_sheet)  # trim off padding so it aligns with printed one
         graded_sheet.save(file_path, "JPEG")
-     
+
 def convert_graded_to_pdf(username, quiz_name):
-    dir_path = path.join(DATA_PATH, username, 'processed_quizzes', quiz_name, 'sheets-graded', 'graded-overlays')
+    quiz_dir = io.quiz_loc(username, quiz_name)
+    dir_path = path.join(quiz_dir, 'sheets-graded', 'graded-overlays')
     sheet_count = get_sheet_count(username, quiz_name)
     img_paths = []
     for sheet_no in range(sheet_count):
@@ -279,7 +287,7 @@ def convert_graded_to_pdf(username, quiz_name):
     subprocess.call(cmd, cwd=dir_path)
     
     
-    dir_path = path.join(DATA_PATH, username, 'processed_quizzes', quiz_name, 'sheets-graded', 'graded-sheets')
+    dir_path = path.join(quiz_dir, 'sheets-graded', 'graded-sheets')
     sheet_count = get_sheet_count(username, quiz_name)
     img_paths = []
     for sheet_no in range(sheet_count):
