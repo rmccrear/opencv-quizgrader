@@ -21,6 +21,9 @@ font-size: 20px;
 .missing {
   color: red;
 }
+img.quiz-to-student-header {
+  height: 100px;
+}
 </style>
   <script>
     const findDups = (idList) => {
@@ -156,7 +159,7 @@ font-size: 20px;
       <p> <img class="quiz-to-student-header" "header-{{i}}" src="{{headers.imgs[i].img_src}}"> </p>
       <p> <span class="header-data header-data-{{headers["sheet_no"]}}" id="header-data-{{headers["sheet_no"]}}-{{i}}">{{headers.data[i]}}</span> </p>
     </div>
-    {%endfor%}
+  {%endfor%}
 
   <a href="/sheet-img/{{username}}/{{quiz_name}}/{{headers["sheet_no"]}}.jpeg")" target="_new" tabindex="-1"> (sheet) </a>
   <div class="header-input-container">
