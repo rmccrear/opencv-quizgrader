@@ -279,18 +279,14 @@ def find_sheet_dims(username, quiz_name, sheet_no, data_path=DATA_PATH):
     SHEET_WIDTH = sheet_im.shape[1]; SHEET_HEIGHT=sheet_im.shape[0];
     return {'width': SHEET_WIDTH, 'height': SHEET_HEIGHT}
 
-import os
+from pathlib import Path
 def ensure_dir(file_path):
-    d = os.path.dirname(file_path)
-    if not os.path.isdir(d):
-        print('creating {}'.format(d))
-        os.makedirs(d)
-    else:
-        print('dir already exists: {}'.format(d))
+    p = Path(file_path)
+    if not p.is_dir():
+        p.mkdir(mode=0o700, parents=True, exist_ok=True)
 
 def create_quiz_directory_structure(username, quiz_name):
     quiz_path = quiz_loc(username, quiz_name)
-    print(quiz_path + 'scoring')
     ensure_dir(quiz_path)
     ensure_dir(quiz_path + 'scoring/')
     ensure_dir(quiz_path + 'sheets/')
