@@ -35,9 +35,6 @@ def users():
 def user_quizzes(username):
     quizzes = glob.glob('./score_data/' + username + "/processed_quizzes/*")
     qs = [os.path.basename(q) for q in quizzes]
-    #print(qs)
-    #qs_links = ["<a href='/quiz/{0}/{1}'> {1} </a>".format(username, q) for q in qs]
-    #return " | ".join(qs_links)
     return render_template("quiz_list.html", quizzes=qs, username=username)
 
 
@@ -102,17 +99,17 @@ def finish_graded_quiz(username, quiz_name):
     t1 = time.perf_counter() 
     set_scores_for_quiz(username, quiz_name)
     t2 = time.perf_counter() 
-    print('set_scores done in {}'.format(float(t2-t1)))
+    app.logger.info('set_scores done in {} sec'.format(float(t2-t1)))
 
     t1 = time.perf_counter() 
     save_graded_sheets_for_quiz(username, quiz_name)
     t2 = time.perf_counter() 
-    print('save graded sheets done in {}'.format(float(t2-t1)))
+    app.logger.info('save graded sheets done in {} sec'.format(float(t2-t1)))
 
     t1 = time.perf_counter() 
     convert_graded_to_pdf(username, quiz_name)
     t2 = time.perf_counter() 
-    print('convert graded sheets done in {}'.format(float(t2-t1)))
+    app.logger.info('convert graded sheets done in {} sec'.format(float(t2-t1)))
 
     return redirect('/quiz/{}/{}'.format(username, quiz_name))
     #overlay_url = "/finished-quiz/overlay/{}/{}/{}--overlay.pdf".format(username, quiz_name, quiz_name)
@@ -133,7 +130,7 @@ def send_graded_quiz(grade_format, username, quiz_name, file_name):
         if(grade_format == 'graded'):
             return send_file(graded_sheet_path, mimetype='application/pdf') 
     except:
-        return "Please Submit quiz for grading first. (Click the submit quiz button.)"
+        return "<h1>Please Submit quiz for grading first. (Click the submit quiz button.)</h1>"
     
 @app.route("/quiz/<username>/<quiz_name>")
 def present_quiz(username, quiz_name):
@@ -162,7 +159,6 @@ def quiz_answer_key(username, quiz_name):
         answer_key = []
         for item_no in range(item_count):
             key_name = "answer_" + str(item_no)
-            print(key_name)
             val = request.form.get(key_name, False)
             answer_key.append(val if val else '')
         save_answer_key(username, quiz_name, answer_key)
@@ -239,9 +235,8 @@ def quiz_to_students(username, quiz_name, semester, course):
 
     sheet_no2student_id = get_student_ids_for_quiz(username, quiz_name)
     if(len(sheet_no2student_id ) < 1):
-        print('no studdnt ids in place yet')
+        app.logger.error('no studdnt ids in place yet')
         sheet_no2student_id = ['',''] + [s['student_id'] for s in roster]
-        print(sheet_no2student_id)
     # sheet_no2student_id = get_sheets2student_ids(username, quiz_name)
     #if(len(sheet_no2student_id) < 1)):
     #    sheet_no2student_id = [s['student_id'] for s in s roster]
@@ -250,7 +245,6 @@ def quiz_to_students(username, quiz_name, semester, course):
 @app.route("/save-students-for-quiz/<username>/<quiz_name>", methods=['POST'])
 def save_quiz_to_students(username, quiz_name):
     data = request.get_json()
-    print(json.dumps(data))
     set_student_ids_for_quiz(username, quiz_name, data)
     return json.dumps(data)
 
@@ -271,7 +265,6 @@ def set_correction(username, quiz_name, sheet_no, item_no, value):
         for row in reader:
             rows.append(row)
         rows[sheet_no][item_no + CORR_LEFT_OFFSET] = value
-    print(rows)
     with open(filename, mode='w') as f:
         writer = csv.writer(f)
         writer.writerows(rows)
@@ -390,9 +383,6 @@ def get_indeces_for_value(username, quiz_name, value):
     for idx, val in enumerate(answer_key):
         if(val == value):
             indeces.append(idx)
-    print("indeces")
-    print(indeces)
-    return indeces
 
 # def get_answer_key(username, quiz_name):
 #     filename = "./score_data/{0}/processed_quizzes/{1}/scoring/answer_key.json".format(username, quiz_name)
