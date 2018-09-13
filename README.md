@@ -12,7 +12,7 @@ Then you can set up the python libraries by installing from the requirements.txt
 ```
 conda install -c anaconda flask pillow matplotlib
 conda install -c carta jwt
-pip install bcrypt
+pip install bcrypt img2pdf
 ```
 
 setting up opencv is a little difficult. One way to do it is with anaconda. This will avoid having to compile.
@@ -52,7 +52,7 @@ apt-get install cmake git libgtk2.0-dev pkg-config libavcodec-dev libavformat-de
 ```
 conda install -c conda-forge opencv
 conda install -c anaconda flask pillow matplotlib 
-pip install jwt bcrypt
+pip install jwt bcrypt img2pdf
 ```
 
 Finally, Run local server

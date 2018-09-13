@@ -274,16 +274,13 @@ def convert_graded_to_pdf(username, quiz_name):
     for sheet_no in range(sheet_count):
         file_name = 'graded-overlay-' + str(sheet_no) + '.jpeg'
         img_paths.append(file_name)
-    cmd = ['convert']
+
+    cmd = ['img2pdf', '--output', 'graded-overlays.pdf']
     cmd.extend(img_paths)
-    cmd.extend(['-quality', '100', 'graded-overlays.pdf']) # not sure if -quality 100 is getting run here
-                                                           # could also use:  -page A4  ?
-    #cmd = 'convert {} -quality 100 graded-overlays.pdf'.format(img_paths_str)
     subprocess.call(cmd, cwd=dir_path)
     
-    cmd = ['convert']
+    cmd = ['img2pdf', '--output', 'graded-overlays-reversed.pdf']
     cmd.extend(reversed(img_paths))
-    cmd.extend(['-quality', '100', 'graded-overlays-reversed.pdf']) # not sure if -quality 100 is getting run here
     subprocess.call(cmd, cwd=dir_path)
     
     
@@ -293,10 +290,8 @@ def convert_graded_to_pdf(username, quiz_name):
     for sheet_no in range(sheet_count):
         file_name = 'graded-sheet-' + str(sheet_no) + '.jpeg'
         img_paths.append(file_name)
-    cmd = ['convert']
+
+    cmd = ['img2pdf', '--output', 'graded-sheets.pdf']
     cmd.extend(img_paths)
-    cmd.extend(['-quality', '100', 'graded-sheets.pdf']) # not sure if -quality 100 is getting run here
-                                                           # could also use:  -page A4  ?
-    #cmd = 'convert {} -quality 100 graded-overlays.pdf'.format(img_paths_str)
     subprocess.call(cmd, cwd=dir_path)
     
