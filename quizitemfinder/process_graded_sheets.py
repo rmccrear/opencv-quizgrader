@@ -11,7 +11,7 @@ import quizitemfinder.io as io
 # FONT_PATH = path.join('/System/Library/Fonts', 'NoteWorthy.ttc')
 DATA_PATH = path.join('/Users/robertmccreary/Documents/code/proj/python/quiz_grader_server_python/score_data')
 
-font_preference = ['NoteWorthy', 'Gamja Flower', 'arial']
+font_preference = ['NoteWorthy', 'Gamja Flower', 'arial', '']
 def get_font_path(font_preference=font_preference):
     path = None
     n = 0
