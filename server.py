@@ -383,6 +383,7 @@ def get_indeces_for_value(username, quiz_name, value):
     for idx, val in enumerate(answer_key):
         if(val == value):
             indeces.append(idx)
+    return indeces
 
 # def get_answer_key(username, quiz_name):
 #     filename = "./score_data/{0}/processed_quizzes/{1}/scoring/answer_key.json".format(username, quiz_name)
