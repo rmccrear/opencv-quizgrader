@@ -21,54 +21,55 @@ except:
 
 # example
 with open("./score_data/{}/my_courses/106-2/ENG-101/roster.csv".format(username), "w+") as myfile:
-    roster = """10001,Roger,stu1@myschool.edu
-10002,Jenny,stu2@myschool.edu
-10003,John,stu2@myschool.edu
-4,Dovie ,*
-5,Daniel,*
-6,Rossana  ,*
-7,Gretchen  ,*
-8,Margery  ,*
-9,Keva  ,*
-10,Elliot ,* 
-11,Shay  ,*
-12,Eleanor ,* 
-13,Dorthea  ,*
-14,Elvie  ,*
-15,Gerard  ,*
-16,Cassie  ,*
-17,Lula  ,*
-18,Lady  ,*
-19,Walter  ,*
-20,Delores  ,*
-21,Stanley  ,*
-22,Cheree  ,*
-23,Jefferson ,* 
-24,Janis  ,*
-25,Ressie  ,*
-26,Gretta  ,*
-27,Noah  ,*
-28,Chanelle,*  
-29,Nguyet  ,*
-30,Sharmaine ,* 
-31,Cecila  ,*
-32,Stacia  ,*
-33,Latia  ,*
-34,Carry  ,*
-35,Carmelo  ,*
-36,Franklin  ,*
-37,Riley  ,*
-38,Lesha  ,*
-39,Lauran  ,*
-40,Yoshie  ,*
-41,Mitsue  ,*
-42,Wilda  ,*
-43,Elisha  ,*
-44,Carisa  ,*
-45,Camellia  ,*
-46,Jeanie  ,*
-47,Kathryn  ,*
-48,Loura  ,*
+    roster = """ID,NAME,EMAIL
+10001,Roger,stu1@myschool.edu
+1002,Jenny,stu2@myschool.edu
+1003,John,stu2@myschool.edu
+1004,Dovie ,*
+1005,Daniel,*
+1006,Rossana  ,*
+1007,Gretchen  ,*
+1008,Margery  ,*
+1009,Keva  ,*
+1010,Elliot ,* 
+1011,Shay  ,*
+1012,Eleanor ,* 
+1013,Dorthea  ,*
+1014,Elvie  ,*
+1015,Gerard  ,*
+1016,Cassie  ,*
+1017,Lula  ,*
+1018,Lady  ,*
+1019,Walter  ,*
+1020,Delores  ,*
+1021,Stanley  ,*
+1022,Cheree  ,*
+1023,Jefferson ,* 
+1024,Janis  ,*
+1025,Ressie  ,*
+1026,Gretta  ,*
+1027,Noah  ,*
+1028,Chanelle,*  
+1029,Nguyet  ,*
+1030,Sharmaine ,* 
+1031,Cecila  ,*
+1032,Stacia  ,*
+1033,Latia  ,*
+1034,Carry  ,*
+1035,Carmelo  ,*
+1036,Franklin  ,*
+1037,Riley  ,*
+1038,Lesha  ,*
+1039,Lauran  ,*
+1040,Yoshie  ,*
+1041,Mitsue  ,*
+1042,Wilda  ,*
+1043,Elisha  ,*
+1044,Carisa  ,*
+1045,Camellia  ,*
+1046,Jeanie  ,*
+1047,Kathryn  ,*
+1048,Loura  ,*
 """
     myfile.write(roster)
 
