@@ -176,6 +176,7 @@ def draw_answer(sheet_img, pt, answer, font_size, color=(200,0,0,128)):
     # get a font
     font = ImageFont.truetype(FONT_PATH, font_size)
     draw.text(pt, answer, font=font, fill=color)
+    del draw
     return sheet_img
 
 def draw_answers(sheet_img, bounding_boxes, answer_key, corrections, font_size, offsets):
@@ -195,7 +196,7 @@ def draw_answers(sheet_img, bounding_boxes, answer_key, corrections, font_size, 
         draw_answer(sheet_img, ans_bb, answer, font_size, color=correction_color)
     return sheet_img
 
-def draw_answers_for_quiz(username, quiz_name, on_blank=False):
+def draw_and_save_answers_for_quiz(username, quiz_name, on_blank=False, sub_dir="sheets-graded/graded-sheets", prefix="graded-sheet-", suffix=".jpeg", img_type="JPEG"):
     sheet_count = get_sheet_count(username, quiz_name)
     corrections = get_corrections(username, quiz_name)
     id_and_score = get_id_and_score(username, quiz_name)
@@ -219,7 +220,8 @@ def draw_answers_for_quiz(username, quiz_name, on_blank=False):
         student_id = id_and_score[sheet_no][0]
         draw_score(sheet_img, score, score_pos,score_font_size)
         draw_student_id(sheet_img, student_id, id_pos, id_font_size)
-        sheet_imgs.append(sheet_img)
+        save_graded_sheet(sheet_img, username, quiz_name, sheet_no, sub_dir=sub_dir, prefix=prefix, suffix=suffix, img_type=img_type)
+        del sheet_img
     return sheet_imgs
 
 def draw_score(sheet_img, score_str, position, font_size):
@@ -228,12 +230,14 @@ def draw_score(sheet_img, score_str, position, font_size):
     # get a font
     font = ImageFont.truetype(FONT_PATH, font_size)
     draw.text(position, "{}%".format(score_str), font=font, fill="red")
+    del draw
 
 def draw_student_id(sheet_img, student_id, position, font_size):
     draw = ImageDraw.Draw(sheet_img)
     # get a font
     font = ImageFont.truetype(FONT_PATH, font_size)
     draw.text(position, "{}".format(student_id), font=font, fill="black")  
+    del draw
     
 #def calculate_score(corrections):
 #    # weights
@@ -253,18 +257,16 @@ def trim_padding_on_sheet(sheet_img):
        )
     )
 
+def save_graded_sheet(graded_sheet_img, username, quiz_name, sheet_no, sub_dir="sheets-graded/graded-sheets", prefix="graded-sheet-", suffix=".jpeg", img_type="JPEG"):
+    quiz_dir = io.quiz_loc(username, quiz_name)
+    file_path = path.join(quiz_dir, sub_dir, "{}{}{}".format(prefix, str(sheet_no), suffix ))
+    graded_sheet_img.save(file_path, img_type)
+
+
 def save_graded_sheets_for_quiz(username, quiz_name):
     quiz_dir = io.quiz_loc(username, quiz_name)
-    graded_sheets = draw_answers_for_quiz(username, quiz_name)
-    for sheet_no, graded_sheet in enumerate(graded_sheets):
-        file_path = path.join(quiz_dir, 'sheets-graded', 'graded-sheets','graded-sheet-' + str(sheet_no) + '.jpeg')
-        graded_sheet.save(file_path, "JPEG")
-    graded_sheets = draw_answers_for_quiz(username, quiz_name, on_blank=True)
-    for sheet_no, graded_sheet in enumerate(graded_sheets):
-        #file_path = path.join(DATA_PATH, username, 'processed_quizzes', quiz_name, 'sheets-graded', 'graded-overlays','graded-overlay-' + str(sheet_no) + '.jpeg')
-        file_path = path.join(quiz_dir, 'sheets-graded', 'graded-overlays','graded-overlay-' + str(sheet_no) + '.jpeg')
-        graded_sheet = trim_padding_on_sheet(graded_sheet)  # trim off padding so it aligns with printed one
-        graded_sheet.save(file_path, "JPEG")
+    draw_and_save_answers_for_quiz(username, quiz_name)
+    draw_and_save_answers_for_quiz(username, quiz_name, on_blank=True, sub_dir="sheets-graded/graded-overlays/", prefix="graded-overlay-", suffix=".jpeg", img_type="JPEG")
 
 def convert_graded_to_pdf(username, quiz_name):
     quiz_dir = io.quiz_loc(username, quiz_name)
