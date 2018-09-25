@@ -235,6 +235,10 @@
       setItemCorrection(username, quiz_name, sheet_no, item_no, value);
       $('#current-sheet-img').attr('src', `/sheet-img/${username}/${quiz_name}/${sheet_no}.jpeg`)
     })
+    // start with answer key
+    var username = $('li.item').first().data('username');
+    var quiz_name = $('li.item').first().data('quiz-name');
+    $('#current-sheet-img').attr('src', `/sheet-img/${username}/${quiz_name}/1.jpeg`)
   });
 </script> 
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
