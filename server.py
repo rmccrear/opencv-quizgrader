@@ -11,7 +11,7 @@ import glob
 import os
 
 
-from quizitemfinder.io import create_quiz_directory_structure, header_im_path, count_headers, count_sheets, get_roster, set_student_ids_for_quiz, get_student_ids_for_quiz, set_scores_for_quiz, get_scores_for_quiz, get_answer_key, save_answer_key, get_corrections, error_sheet_path, error_corrected_sheet_path, get_sheets_with_errors
+from quizitemfinder.io import create_quiz_directory_structure, header_im_path, count_headers, count_sheets, get_roster, set_student_ids_for_quiz, get_student_ids_for_quiz, set_scores_for_quiz, get_scores_for_quiz, get_answer_key, save_answer_key, get_corrections, error_sheet_path, error_corrected_sheet_path, get_sheets_with_errors, find_sheet_dims
 from quizitemfinder.process_quiz import do_process_quiz
 from quizitemfinder.process_graded_sheets import save_graded_sheets_for_quiz, convert_graded_to_pdf
 
@@ -293,14 +293,16 @@ def serve_items(username, quiz_name, item_no):
     except:
         url = '/quiz-answer-key/{}/{}'.format(username, quiz_name)
         return 'Please go to set answer key first <a href="{}"> (go) </a>'.format(url)
+    sheet_dims = find_sheet_dims(username, quiz_name, 0)
 
-    return render_template("correct_items.html", items=items, items_in_sheets=items_in_sheets, answer_value=answer_value)
+    return render_template("correct_items.html", items=items, items_in_sheets=items_in_sheets, answer_value=answer_value, sheet_dims=sheet_dims)
 
 @app.route("/items-for-value/<username>/<quiz_name>/<path:answer_value>")
 def serve_items_for_particular_answer(username, quiz_name,  answer_value):
     items = make_items_for_particular_answer(username, quiz_name,  answer_value)
     items_in_sheets = make_corrections(username, quiz_name)
-    return render_template("correct_items.html", items=items, items_in_sheets=items_in_sheets, answer_value=answer_value, username=username, quiz_name=quiz_name)
+    sheet_dims = find_sheet_dims(username, quiz_name, 0)
+    return render_template("correct_items.html", items=items, items_in_sheets=items_in_sheets, answer_value=answer_value, username=username, quiz_name=quiz_name, sheet_dims=sheet_dims)
 
 def make_items_for_particular_answer(username, quiz_name,  answer):
     indeces = get_indeces_for_value(username, quiz_name, answer)
