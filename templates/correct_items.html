@@ -216,6 +216,13 @@
     const action = toggleTypes[toggleIndex];
     showCorrectOrIncorrect(action);
   }
+  function resizeSheetDisplay(dims, target_dims){
+    const width = dims.width;
+    const target_width = target_dims.width;
+    const ratio = (target_width/width);
+    const transform = `scale(${ratio.toString()})`;
+    $(".current-sheet-container-inner").css({"transform": transform});
+  }
   $(function(){
     $('#toggleType').on("click", toggleHidden);
     $('#show-correct').on('click', ()=>showCorrectOrIncorrect('correct'))
@@ -235,11 +242,15 @@
       setItemCorrection(username, quiz_name, sheet_no, item_no, value);
       $('#current-sheet-img').attr('src', `/sheet-img/${username}/${quiz_name}/${sheet_no}.jpeg`)
     })
+    // resize the sheet
+    const dims = { width: {{sheet_dims["width"]}}, height: {{sheet_dims["height"]}} };
+    resizeSheetDisplay(dims, {width: 800});
     // start with answer key
     var username = $('li.item').first().data('username');
     var quiz_name = $('li.item').first().data('quiz-name');
     $('#current-sheet-img').attr('src', `/sheet-img/${username}/${quiz_name}/1.jpeg`)
   });
+
 </script> 
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 
