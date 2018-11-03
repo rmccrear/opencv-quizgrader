@@ -338,3 +338,8 @@ def write_cv_data(username, quiz_name, cv_data, answer_key, corrections):
             for row in corrections:
                 wr.writerow(row)
 
+def is_quiz_finished(username, quiz_name):
+    dir = quiz_loc(username, quiz_name)
+    p = dir + "sheets-graded/graded-sheets/graded-sheet-0.jpeg"
+    path = Path(p)
+    return path.exists()

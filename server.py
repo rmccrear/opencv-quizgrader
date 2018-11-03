@@ -11,7 +11,7 @@ import glob
 import os
 
 
-from quizitemfinder.io import create_quiz_directory_structure, header_im_path, count_headers, count_sheets, get_roster, set_student_ids_for_quiz, get_student_ids_for_quiz, set_scores_for_quiz, get_scores_for_quiz, get_answer_key, save_answer_key, get_corrections, error_sheet_path, error_corrected_sheet_path, get_sheets_with_errors, find_sheet_dims
+from quizitemfinder.io import create_quiz_directory_structure, header_im_path, count_headers, count_sheets, get_roster, set_student_ids_for_quiz, get_student_ids_for_quiz, set_scores_for_quiz, get_scores_for_quiz, get_answer_key, save_answer_key, get_corrections, error_sheet_path, error_corrected_sheet_path, get_sheets_with_errors, find_sheet_dims, is_quiz_finished
 from quizitemfinder.process_quiz import do_process_quiz
 from quizitemfinder.process_graded_sheets import save_graded_sheets_for_quiz, convert_graded_to_pdf
 
@@ -35,7 +35,10 @@ def users():
 def user_quizzes(username):
     quizzes = glob.glob('./score_data/' + username + "/processed_quizzes/*")
     qs = [os.path.basename(q) for q in quizzes]
-    return render_template("quiz_list.html", quizzes=qs, username=username)
+    finished_hash = {}
+    for q in qs:
+        finished_hash[q] = is_quiz_finished(username, q)
+    return render_template("quiz_list.html", quizzes=qs, username=username, finished_hash=finished_hash)
 
 
 @app.route("/new-quiz/<username>/", methods=['GET', 'POST'])

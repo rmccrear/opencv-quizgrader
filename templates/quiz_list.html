@@ -26,6 +26,14 @@
     <td>
       &nbsp;&nbsp;&nbsp;&nbsp; <a href='/reprocess-quiz/{{username}}/{{quiz_name}}'>   reprocess ↻ </a>
     </td>
+    <td>
+      &nbsp;&nbsp;&nbsp;&nbsp;
+      {%if finished_hash[quiz_name]%}
+        done ☑
+      {%else%}
+        not done ☐
+      {%endif%}
+    </td>
 
   </tr>
   {%endfor%}
