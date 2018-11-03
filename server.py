@@ -94,6 +94,7 @@ def quiz_scores(username, quiz_name):
 
 
 import time
+from quizitemfinder.process_pdf import export_sheets_with_student_numbers
 @app.route("/finish-quiz/<username>/<quiz_name>")
 def finish_graded_quiz(username, quiz_name):
     t1 = time.perf_counter() 
@@ -105,6 +106,7 @@ def finish_graded_quiz(username, quiz_name):
     save_graded_sheets_for_quiz(username, quiz_name)
     t2 = time.perf_counter() 
     app.logger.info('save graded sheets done in {} sec'.format(float(t2-t1)))
+    export_sheets_with_student_numbers(username, quiz_name)
 
     t1 = time.perf_counter() 
     convert_graded_to_pdf(username, quiz_name)

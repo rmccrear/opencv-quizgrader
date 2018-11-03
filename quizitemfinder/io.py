@@ -35,7 +35,9 @@ def sheet_loc(username, quiz_name, sheet_no, data_path=DATA_PATH):
 
 def open_sheet_im(username, quiz_name, sheet_no, data_path=DATA_PATH):
     sheet_location = sheet_loc(username, quiz_name, sheet_no, data_path=DATA_PATH)
-    return cv2.imread(sheet_location, cv2.IMREAD_GRAYSCALE)
+    sheet_im = cv2.imread(sheet_location, cv2.IMREAD_GRAYSCALE)
+    # sheet_im[sheet_im>100]=255 # clean up im
+    return sheet_im
 
 def open_sheet_img(username, quiz_name, sheet_no, data_path=DATA_PATH):
     sheet_location = sheet_loc(username, quiz_name, sheet_no, data_path=DATA_PATH)
@@ -296,6 +298,7 @@ def create_quiz_directory_structure(username, quiz_name):
     ensure_dir(quiz_path + 'sheets-graded/')
     ensure_dir(quiz_path + 'sheets-graded/graded-overlays/')
     ensure_dir(quiz_path + 'sheets-graded/graded-sheets/')
+    ensure_dir(quiz_path + 'sheets-graded/graded-id-sheets/')
 
 
 def read_csv_file(path):

@@ -1,9 +1,25 @@
-from quizitemfinder.io import quiz_loc
+from quizitemfinder.io import quiz_loc, get_roster, get_scores_for_quiz
 
 import subprocess, glob, os, time, re, shutil
 
 # depends on poppler's pdftoppm being in path
 
+class PDFProcessor:
+    def __init__(self, username, quiz_name, format="jpeg"):
+        if(format == "jpeg"):
+            self.img_format = format
+            self.o_suffix = '.jpeg'
+            self.i_search_glob = "*.jpg"
+        if(format == "tiff"):
+            self.img_format = format
+            self.o_suffix = '.tiff'
+            self.i_search_glob = "*.tiff"
+
+    def rename_sheets(self):
+        return rename_sheets(self.username, self.quiz_name, o_prefix=self.o_prefix, i_search_glob=self.i_search_glob)
+
+    def rawpdf2imgs(username, quiz_name, img_format='jpeg', sub_dir='sheets/img'):
+        return rawpdf2imgs(self.username, self.quiz_name, img_format=self.img_format)
 
 
 def rename_sheets(username, quiz_name, sub_dir='sheets/', o_prefix='img-', o_suffix='.jpeg', i_search_glob='*.jpg', i_no_regex='img-(\d+)\.jpg'):
@@ -45,3 +61,15 @@ def cp_graded_pdfs_to_quiz_dir(username, quiz_name):
     shutil.copy2(graded_path, dest_dir + graded_pdf_name)
     shutil.copy2(overlay_path, dest_dir + overlay_pdf_name)
     
+
+def export_sheets_with_student_numbers(username, quiz_name):
+    #roster = get_roster(username, semester, course)
+    scores = get_scores_for_quiz(username, quiz_name)
+    quiz_path = quiz_loc(username, quiz_name)
+    for i in range(2, len(scores)):
+        print(scores[i])
+        stu_id = scores[i][0]
+        if(len(stu_id) > 0):
+            graded_sheet_loc = quiz_path + "/sheets-graded/graded-sheets/graded-sheet-{}.jpeg".format(str(i))
+            student_id_sheet_loc = quiz_path + "/sheets-graded/graded-id-sheets/{}.jpg".format(stu_id)
+            shutil.copy2(graded_sheet_loc, student_id_sheet_loc)
