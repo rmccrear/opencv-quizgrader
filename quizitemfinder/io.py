@@ -145,6 +145,13 @@ def get_student_ids_for_quiz(username, quiz_name):
     else: 
         return []
 
+# items = [(sheet_no, item_no, value)]
+def set_score_for_items(username, quiz_name, items):
+    rows = get_score_data_for_quiz(username, quiz_name)
+    for sheet_no, item_no, value in items:
+        rows[sheet_no][item_no + CORR_LEFT_OFFSET] = value
+    set_score_data_for_quiz(username, quiz_name, rows)
+
 def set_scores_for_quiz(username, quiz_name):
     quiz_path = quiz_loc(username, quiz_name)
     path = quiz_path + 'scoring/corrections.csv'
@@ -169,6 +176,22 @@ def get_scores_for_quiz(username, quiz_name):
     for i in range(len(rows)):
         rows[i] = rows[i][:2]
     return rows
+
+def get_score_data_for_quiz(username, quiz_name):
+    quiz_path = quiz_loc(username, quiz_name)
+    path = quiz_path + 'scoring/corrections.csv'
+    rows = read_csv_file(path)
+    #for i in range(len(rows)):
+    #    rows[i] = rows[i][:2]
+    return rows
+
+def set_score_data_for_quiz(username, quiz_name, rows):
+    quiz_path = quiz_loc(username, quiz_name)
+    path = quiz_path + 'scoring/corrections.csv'
+    with open(path, 'w') as outfile:
+        wr = csv.writer(outfile)#, quoting = csv.QUOTE_MINIMAL, dialect='excel')
+        wr.writerows(rows)
+
 
 def get_answer_key(username, quiz_name):
     quiz_path = quiz_loc(username, quiz_name)

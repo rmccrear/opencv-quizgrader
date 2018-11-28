@@ -183,13 +183,34 @@
   }
   function setItemCorrection(username, quiz_name, sheet_no, item_no, value){
     setItemCorrectionInDOM(username, quiz_name, sheet_no, item_no, value);
-    var url = `/corrections/set/${username}/${quiz_name}/${sheet_no}/${item_no}/${value}`;
+    // var url = `/corrections/set/${username}/${quiz_name}/${sheet_no}/${item_no}/${value}`;
+    var url = `/corrections/set-items/${username}/${quiz_name}/`;
+    var data = []
+    data.push( {
+      item_no: item_no,
+      sheet_no: sheet_no,
+      value: value
+    } );
+    window.fetch(url,
+      {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {
+            "Content-Type": "application/json; charset=utf-8",
+        }
+      }
+    );
+    /*
     $.ajax({
+      method: "POST",
       url: url,
+      data: JSON.data,
       headers: {
         'Authorization': AUTH_TOKEN
-      }
+      },
+      dataType: "json"
     });
+    */
   }
   const toggleTypes = [
     "incorrect", "correct", "all"

@@ -11,7 +11,7 @@ import glob
 import os
 
 
-from quizitemfinder.io import create_quiz_directory_structure, header_im_path, count_headers, count_sheets, get_roster, set_student_ids_for_quiz, get_student_ids_for_quiz, set_scores_for_quiz, get_scores_for_quiz, get_answer_key, save_answer_key, get_corrections, error_sheet_path, error_corrected_sheet_path, get_sheets_with_errors, find_sheet_dims, is_quiz_finished
+from quizitemfinder.io import create_quiz_directory_structure, header_im_path, count_headers, count_sheets, get_roster, set_student_ids_for_quiz, get_student_ids_for_quiz, set_scores_for_quiz, get_scores_for_quiz, get_answer_key, save_answer_key, get_corrections, error_sheet_path, error_corrected_sheet_path, get_sheets_with_errors, find_sheet_dims, is_quiz_finished, set_score_for_items
 from quizitemfinder.process_quiz import do_process_quiz
 from quizitemfinder.process_graded_sheets import save_graded_sheets_for_quiz, convert_graded_to_pdf
 
@@ -258,7 +258,7 @@ def save_quiz_to_students(username, quiz_name):
 CORR_LEFT_OFFSET = 2
 # CORR_LEFT_OFFSET = 0
 # MARK: corrections
-@app.route("/corrections/set/<username>/<quiz_name>/<int:sheet_no>/<int:item_no>/<value>")
+@app.route("/corrections/set/<username>/<quiz_name>/<int:sheet_no>/<int:item_no>/<value>", methods=['GET'])
 def set_correction(username, quiz_name, sheet_no, item_no, value):
     # open cvs
     # cvs[item_no] = value
@@ -274,6 +274,13 @@ def set_correction(username, quiz_name, sheet_no, item_no, value):
         writer = csv.writer(f)
         writer.writerows(rows)
     return value
+
+@app.route("/corrections/set-items/<username>/<quiz_name>/", methods=['POST'])
+def set_corrections(username, quiz_name):
+    items_in=request.get_json()
+    items = [(i["sheet_no"], i["item_no"], i["value"]) for i in items_in]
+    set_score_for_items(username, quiz_name, items)
+    return '{"status": "OK"}'
 
 @app.route("/corrections/get/<username>/<quiz_name>/<int:sheet_no>/<int:item_no>")
 def get_correction(username, quiz_name, sheet_no, item_no):
