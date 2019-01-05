@@ -33,8 +33,8 @@ def users():
 
 @app.route("/quizzes/<username>/")
 def user_quizzes(username):
-    quizzes = glob.glob('./score_data/' + username + "/processed_quizzes/*")
-    qs = [os.path.basename(q) for q in quizzes]
+    quizzes = glob.glob('./score_data/' + username + "/processed_quizzes/*/")
+    qs = [os.path.basename(os.path.normpath(q)) for q in quizzes]
     finished_hash = {}
     for q in qs:
         finished_hash[q] = is_quiz_finished(username, q)
@@ -168,7 +168,14 @@ def quiz_answer_key(username, quiz_name):
             answer_key.append(val if val else '')
         save_answer_key(username, quiz_name, answer_key)
 
-    for item_no in range(item_count): 
+    if len(answer_key) < 1:
+        # todo: check if we don't have an ml model already
+        from quizitemfinder.steps.letterpredictor import LetterPredictor
+        import quizitemfinder.steps.utils as utils
+        predictor = LetterPredictor(utils.QuizRef(username, quiz_name), has_answers=False)
+        answer_key = predictor.predict_answer_key()
+
+    for item_no in range(item_count):
         ans = answer_key[item_no] if item_no < len(answer_key) else ''
         items.append( {'src': "/item-img/{}/{}/{}/{}".format(username, quiz_name, sheet_no, item_no),
                  'sheet_no': sheet_no,

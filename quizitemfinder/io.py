@@ -59,6 +59,10 @@ def item_im_path(username, quiz_name, item_no, sheet_no, data_path=DATA_PATH):
     path = quiz_path + 'trimmed_img/l.{}.i.{}.png'.format(sheet_no, item_no)
     return path
 
+def open_item_im(username, quiz_name, item_no, sheet_no, data_path=DATA_PATH):
+    loc = item_im_path(username, quiz_name, item_no, sheet_no, data_path=data_path)
+    return cv2.imread(loc, cv2.IMREAD_GRAYSCALE)
+    
 def letter_im_path(username, quiz_name, item_no, sheet_no, data_path=DATA_PATH):
     quiz_path = quiz_loc(username, quiz_name) #.format(data_path, username, quiz_name)
     path = quiz_path + 'trimmed_img/letter.{}.i.{}.png'.format(sheet_no, item_no)

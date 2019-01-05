@@ -21,8 +21,10 @@ mnist_convnet_model/
 mnist_model.tar
 raw_pdfs/
 users/
+ml_data/
 *.mp4
 
 # os
 .DS_Store
 *.swp
+

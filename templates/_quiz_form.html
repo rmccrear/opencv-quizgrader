@@ -24,8 +24,30 @@
 
   <div style="display: none;"> Answer key: <textarea name="answer_key" rows=20 cols=20></textarea></div>
   <input id="submit-button" type="submit" value="Upload file">
-</form>
   <span id="submit-message"></span>
+
+  <h4 onclick="javascript:document.getElementById('options-div').classList.add('shown')"> Options -&gt;</h4>
+  <style>
+    #options-div {
+      display: none;
+    }
+    #options-div.shown {
+      display: block;
+    }
+
+  </style>
+  <div id="options-div">
+    <div>
+      <h4> Cropping  </h4>
+      <input type="radio" name="cropping" value="none" id="cropping-none" checked>
+      <label for="cropping-none">no cropping</label><br>
+      <input type="radio" name="cropping" value="left" id="cropping-left">
+      <label for="cropping-none">crop and keep left side </label><br>
+      <input type="radio" name="cropping" value="right" id="cropping-right">
+      <label for="cropping-none">crop and keep right side </label><br>
+    </div>
+  </div>
+</form>
 <script>
 // automatically extract semester, course, and quiz name from filename
 // for example: SEMESTER--COURSE--QUIZNAME.pdf

@@ -1,4 +1,5 @@
-from quizgrader2.mark_squares import getContRect, sort_row_by_horz, find_rects_in_img, organize_found_items, crop_out_item, enhance_item_im, filter_conts_area
+#from quizgrader2.mark_squares import getContRect, sort_row_by_horz, find_rects_in_img, organize_found_items, crop_out_item, enhance_item_im, filter_conts_area
+from quizitemfinder.mark_squares import getContRect, sort_row_by_horz, find_rects_in_img, organize_found_items, crop_out_item, enhance_item_im, filter_conts_area
 import cv2
 import numpy as np
 
@@ -122,7 +123,8 @@ def process_sheet(sheet_im, item_rects_default=None):
 
 
 # This is like pro
-from quizgrader2.io import open_sheet_im
+#from quizgrader2.io import open_sheet_im
+from quizitemfinder.io import open_sheet_im
 def process_sheet_with_default_bounding_box(quiz_name, sheet_no, data_path="./data/processed-quizzes/"):
     #get_defaults
     blank_sheet_im = open_sheet_im(quiz_name, 0, data_path=data_path)
