@@ -228,9 +228,9 @@ def find_min_max_of_rects(ref_rects):
 from collections import namedtuple
 RectBounds = namedtuple('RectBounds', ['min_width', 'max_width', 'min_height', 'max_height', 'min_area', 'max_area'])
 RectDims = namedtuple('RectDims', ['width', 'height', 'area'])
-def find_bounds_of_rects(ref_rects):
-    print(ref_rects)
-    e = .1
+def find_bounds_of_rects(ref_rects, acceptable_error=.1):
+    #print(ref_rects)
+    e = acceptable_error
     all_ref_rects = ref_rects["headers"] + ref_rects["items"]
     ref_rect_areas   = [area_of_rect(rect)   for rect in all_ref_rects]
     ref_rect_widths  = [width_of_rect(rect)  for rect in all_ref_rects]
@@ -250,7 +250,7 @@ def find_bounds_of_rects(ref_rects):
         max_area=int(max_area*(1+e))
     )
 def find_dims_of_rect(rect):
-    print(rect)
+    #print(rect)
     return RectDims(
         width=width_of_rect(rect),
         height=height_of_rect(rect),
@@ -260,7 +260,7 @@ def find_dims_of_rect(rect):
 # heuristic to filter out bad rects
 def is_rect_within_bounds(rect, bounds):
     dims = find_dims_of_rect(rect)
-    print(dims)
+    #print(dims)
     if(dims.width>bounds.min_width   and dims.width<bounds.max_width and
        dims.height>bounds.min_height and dims.height<bounds.max_height and
        dims.area>bounds.min_area     and dims.area<bounds.max_area):

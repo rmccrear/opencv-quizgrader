@@ -8,6 +8,7 @@ class ItemImageData:
         self.item_no = item_no
         self.val = val
         self.predicted_val = None
+        self.score = None
         self.letter_im = letter_im
         self.has_error = letter_has_error(self.letter_im)
         self.error_val = None
@@ -15,10 +16,10 @@ class ItemImageData:
             self.error_val = letter_im
 
     def __repr__(self):
-        return "<Item {}/{} sheet_no:{}, item_no: {}, val: {} pred: {}>".format(self.quiz_ref.username, self.quiz_ref.quiz_name, self.sheet_no, self.item_no, self.val, self.predicted_val)
+        return "<Item {}/{} sheet_no:{}, item_no: {}, val: {} pred: {} score: {}>".format(self.quiz_ref.username, self.quiz_ref.quiz_name, self.sheet_no, self.item_no, self.val, self.predicted_val, self.score)
 
     def __str__(self):
-        return "Item: {}/{} {}-{} ({}) pred: {}".format(self.quiz_ref.username, self.quiz_ref.quiz_name, self.sheet_no, self.item_no, self.val, self.predicted_val)
+        return "Item: {}/{} {}-{} ({}) pred: {} score: {}".format(self.quiz_ref.username, self.quiz_ref.quiz_name, self.sheet_no, self.item_no, self.val, self.predicted_val, self.score)
 
     def letter_data(self):
         return np.ravel(self.letter_im).tolist()

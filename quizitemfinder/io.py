@@ -274,7 +274,7 @@ def set_list_of_corrections(username, quiz_name, correction_list):
     with open(corrections_path, mode='w') as f:
         writer = csv.writer(f)
         writer.writerows(rows)
-    return value
+    #return value
 
 #def item_path(sheet_no, item_no, quiz_name, data_path="./data/processed-quizzes/"):
 #    p = data_path  + "{}/l.{}.i.{}.png".format(quiz_name, sheet_no, item_no)

@@ -186,6 +186,22 @@ def quiz_answer_key(username, quiz_name):
             } )
     return render_template("answer_key.html", username=username, quiz_name=quiz_name, items=items, item_count=len(items))
 
+@app.route("/quiz-auto-grade/<username>/<quiz_name>", methods=['POST'] )
+def quiz_auto_grade(username, quiz_name):
+    from quizitemfinder.steps.letterpredictor import LetterPredictor
+    import quizitemfinder.steps.utils as utils
+    from quizitemfinder.io import set_list_of_corrections
+    quiz_ref = utils.QuizRef(username, quiz_name)
+    predictor = LetterPredictor(quiz_ref)
+    predictor.clean_items()
+    items = predictor.predict()
+    #corrections = get_corrections(username, quiz_name)
+    #predictor.corrections2d(corrections)
+    # need to get answer_key and do corrections
+    list_of_corrections = [[item.sheet_no, item.item_no, item.score] for item in items if item.score == 0]
+    set_list_of_corrections(username, quiz_name, list_of_corrections)
+    return redirect('/quiz/{}/{}'.format(username, quiz_name))
+
 @app.route("/quiz/<username>/<quiz_name>/<sheet_no>")
 def user_quiz(username, quiz_name, sheet_no):
     img_src = "/sheet-img/{0}/{1}/{2}.jpeg".format(username, quiz_name, sheet_no)

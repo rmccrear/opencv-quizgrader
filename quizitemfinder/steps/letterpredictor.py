@@ -12,6 +12,8 @@ class LetterPredictor:
         self.value_whitelist = ['A', 'B', 'C', 'D']
         if has_answers:
             self.answer_key = self.quiz_ref.get_answer_key()
+        else:
+            self.answer_key = None
 
     def clean_items(self):
         items = self.idc.process_a_quiz(quiz_ref=self.quiz_ref)
@@ -34,7 +36,15 @@ class LetterPredictor:
         data_for_letters = [item.letter_data() for item in clean_items]
         predictions_for_letters = self.clf.predict(data_for_letters)
         for item, prediction in zip(clean_items, predictions_for_letters):
+            # set letter prediction on item object
             item.predicted_val=prediction
+            # score based on answer_key
+            if self.answer_key is not None:
+                if item.predicted_val == self.answer_key[item.item_no]:
+                    item.score = 1
+                else:
+                    item.score = 0
+                print(item)
         return clean_items
         
     def predict(self):
