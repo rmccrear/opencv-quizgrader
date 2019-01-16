@@ -1,5 +1,6 @@
 from quizitemfinder.io import open_rects as cached_cells
 import quizitemfinder.steps.utils as utils
+from quizitemfinder.steps.step1errorfix import fix_sheet_errors
 
 from collections import namedtuple
 Rect = namedtuple('Rect', ['x', 'y', 'w', 'h'])
@@ -21,13 +22,17 @@ class CellFinder:
     def __init__(self, username=None, quiz_name=None, quiz_ref=None):
         if username is not None and quiz_name is not None:
             self.username, self.quiz_name = (username, quiz_name)
+            self.quiz_ref = utils.QuizRef(username, quiz_name)
         else:
             self.username, self.quiz_name = (quiz_ref.username, quiz_ref.quiz_name)
+            self.quiz_ref = quiz_ref
 
         self.cells = None
 
     def find_cells(self):
-        return self.__process_cells()
+        raw_cells = self.__process_cells()
+        fixed_cells = fix_sheet_errors(raw_cells, self.quiz_ref)
+        return fixed_cells
 
     def find_reference_cells(self):
         return self.__process_cells()[0]
