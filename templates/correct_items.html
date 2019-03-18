@@ -121,17 +121,8 @@
   <div class="items-list-container">
     <ul class="list-group">
     {% for item in items %}
-    <li class="list-group-item item {%if item['value'] == '0' %} incorrect {%endif%} {%if item['value'] == '1'%} correct{%endif%} item-{{item['username']}}-{{item['quiz_name']}}-{{item['sheet_no']}}-{{item['item_no']}}" 
-                     data-item-no="{{item['item_no']}}"
-                     data-sheet-no="{{item['sheet_no']}}"
-                     data-value="{{item['value']}}" 
-                     data-username="{{item['username']}}"
-                     data-quiz-name="{{item['quiz_name']}}"
-                     >
-                     <div class="item-container">
-                      <img src="{{item['src']}}">
-                     </div>
-    </li>
+      {% include "_cropped_image_css_cropped.html" %}
+      {# include "_cropped_image_precropped.html" #}
     {% endfor %}
     </ul>
   </div>
@@ -141,7 +132,7 @@
           <img id="current-sheet-img">
           {%for item in items_in_sheets%}
           <div class="item item-in-sheet {%if item['value'] == '0' %} incorrect {%endif%} {%if item['value'] == '1'%} correct{%endif%} {{item['id_classes'][0]}} {{item['id_classes'][1]}}"
-            style="left:{{item['bounding_box'][0]}}px; top:{{item['bounding_box'][1]}}px; width: {{item['bounding_box'][2]-item['bounding_box'][0]}}px; height: {{item['bounding_box'][3]-item['bounding_box'][1]}}px;"
+            style="left:{{item['dims']['x']}}px; top:{{item['dims']['y']}}px; width: {{item['dims']['width']}}px; height: {{item['dims']['height']}}px;"
                      >
                      {{item['correct_answer']}}
                      {% if item['value'] == 0 %} X {%endif%}

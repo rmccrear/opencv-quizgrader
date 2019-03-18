@@ -354,20 +354,32 @@ def make_items(username, quiz_name, item_no):
     sheet_count = get_sheet_count(username, quiz_name)
     corrections = get_corrections(username, quiz_name)
     corrections_for_i = [c[item_no] for c in corrections]
+    bounding_boxes = get_bounding_boxes_for_sheets(username, quiz_name) # bounding boxes for sample sheet (sheet_no 0)
     items = [
-                make_item(username, quiz_name, sheet_no, item_no, corrections_for_i[sheet_no]) 
+                make_item(username, quiz_name, sheet_no, item_no, corrections_for_i[sheet_no], bounding_boxes[sheet_no]['items'][item_no])
                 for sheet_no in range(1, sheet_count) # ignore first (blank) sheet
             ]
     return items
 
-def make_item(username, quiz_name, sheet_no, item_no, correction):
+def make_item(username, quiz_name, sheet_no, item_no, correction, bounding_box):
     return {'src': "/item-img/{}/{}/{}/{}".format(username, quiz_name, sheet_no, item_no),
                  'sheet_no': sheet_no,
                  'item_no': item_no,
                  'username': username,
                  'quiz_name': quiz_name,
-                 'value': correction
+                 'value': correction,
+                 'dims': bounding_box_to_dims(bounding_box)
             }
+
+def bounding_box_to_dims(bounding_box):
+    bb = bounding_box
+    return {
+        "bounding_box": bb,
+        "x": bb[0],
+        "y": bb[1],
+        "height": bb[3] - bb[1],
+        "width":  bb[2] - bb[0]
+    }
 
 def make_corrections(username, quiz_name):
     answer_key = get_answer_key(username, quiz_name)
@@ -401,7 +413,8 @@ def make_correction(id_classes, correct_answer, bounding_box, correction_value):
             'id_classes': id_classes,
             'correct_answer' : correct_answer,
             'value': correction_value,
-            'bounding_box': bounding_box
+            'bounding_box': bounding_box,
+            'dims': bounding_box_to_dims(bounding_box)
             }
 
 def make_dom_id_classes(username, quiz_name, sheet_no, item_no):
@@ -467,4 +480,18 @@ def get_bounding_boxes_for_quiz(username, quiz_name):
     with open(filename) as data_file:    
         data = json.load(data_file)
     return data["bounding_boxes"]
+
+def get_bounding_boxes_for_sheets(username, quiz_name):
+    filename = "./score_data/{0}/processed_quizzes/{1}/scoring/rectangles.json".format(username, quiz_name)
+    data = None
+    with open(filename) as data_file:    
+        data = json.load(data_file)
+    data_flat = [{}]*len(data)
+    for i in range(len(data)):
+        if data[i] is False:
+            data[i] = data[0]
+        # flatten
+        data_flat[i]['items'] =   [ [ d[0][0], d[0][1], d[1][0], d[1][1] ] for d in data[i]['items']   ]
+        data_flat[i]['headers'] = [ [ d[0][0], d[0][1], d[1][0], d[1][1] ] for d in data[i]['headers'] ]
+    return data_flat
 

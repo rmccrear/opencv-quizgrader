@@ -1,0 +1,24 @@
+<style>
+  div.cropped-img-div-{{item['sheet_no']}}-{{item['item_no']}} {
+        height: {{item['dims']['height']}}px;
+        width:  {{item['dims']['width']}}px;
+        background-position: left -{{item['dims']['x']}}px top -{{item['dims']['y']}}px;
+        background-image: url(/sheet-img/{{item['username']}}/{{item['quiz_name']}}/{{item['sheet_no']}}.jpeg);
+        background-repeat: no-repeat;
+        background-size: auto;
+  }
+</style>
+
+    <li class="list-group-item item {%if item['value'] == '0' %} incorrect {%endif%} {%if item['value'] == '1'%} correct{%endif%} item-{{item['username']}}-{{item['quiz_name']}}-{{item['sheet_no']}}-{{item['item_no']}}" 
+                     data-item-no="{{item['item_no']}}"
+                     data-sheet-no="{{item['sheet_no']}}"
+                     data-value="{{item['value']}}" 
+                     data-username="{{item['username']}}"
+                     data-quiz-name="{{item['quiz_name']}}"
+                     >
+                     <div class="item-container">
+                      <div class="cropped-img-div-{{item['sheet_no']}}-{{item['item_no']}}"></div>
+                     </div>
+    </li>
+
+
