@@ -79,9 +79,12 @@ def sheet_rects_from_contours(reference_sheet_rects, contours):
     acceptable_bounds = find_bounds_of_rects(reference_sheet_rects) # upper and lower limits for size of a rect
     correct_sized_rects = [rect for rect in rects_of_contours if is_rect_within_bounds(rect, acceptable_bounds)]
 
+    header_len = len(reference_sheet_rects['headers'])
+    item_len = len(reference_sheet_rects['items'])
+
     # organize based on position
     # build data structure for sheet_rect
-    sheet_rects = {'headers': [None]*3, 'items': [None]*20}
+    sheet_rects = {'headers': [False]*header_len, 'items': [False]*item_len}
     ref_rects_for_check = []
     for no, rect in enumerate(reference_sheet_rects["headers"]):
         ref_rects_for_check.append((rect, 'headers', no))

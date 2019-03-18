@@ -172,8 +172,11 @@ def quiz_answer_key(username, quiz_name):
         # todo: check if we don't have an ml model already
         from quizitemfinder.steps.letterpredictor import LetterPredictor
         import quizitemfinder.steps.utils as utils
-        predictor = LetterPredictor(utils.QuizRef(username, quiz_name), has_answers=False)
-        answer_key = predictor.predict_answer_key()
+        try:
+            predictor = LetterPredictor(utils.QuizRef(username, quiz_name), has_answers=False)
+            answer_key = predictor.predict_answer_key()
+        except:
+            print("error in answer key processing")
 
     for item_no in range(item_count):
         ans = answer_key[item_no] if item_no < len(answer_key) else ''

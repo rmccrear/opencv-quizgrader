@@ -37,7 +37,19 @@ def items_in_sheet_with_error_check(username, quiz_name, sheet_no, defaults):
     if(len(items["items"]) is item_count ): # only check for item count, since we can worry about headers elsewhere
         return items
     else:
-        return False
+        rects = rects_for_sheets_with_errors(sheet_im, defaults)
+        if False in rects['items'] or False in rects['headers']:
+            print("None found in {}".format(sheet_no))
+            print(rects)
+            return False
+        else:
+            return rects
+       #  return False
+
+def rects_for_sheets_with_errors(sheet_im, defaults):
+    from quizitemfinder.steps.step1errorfix import find_rects_from_im
+    rects = find_rects_from_im(sheet_im, defaults)
+    return rects
 
     
     
