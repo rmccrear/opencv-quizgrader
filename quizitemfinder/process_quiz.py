@@ -52,8 +52,68 @@ def rects_for_sheets_with_errors(sheet_im, defaults):
     return rects
 
     
-    
+def find_items_and_headers_for_all_items(username, quiz_name):
+    defaults = default_items(username, quiz_name)
+    sheet_count = count_sheets(username, quiz_name)
+    sheet_nos_for_errors = []
+    rects = [None]*sheet_count
+    for sheet_no in range(sheet_count):
+        sheet_im = open_sheet_im(username, quiz_name, sheet_no)
+        items = items_in_sheet_with_error_check(username, quiz_name, sheet_no, defaults)
+        rects[sheet_no] = items
+        if(items is False):
+            sheet_nos_for_errors.append(sheet_no)
+
+    # save_rects(username, quiz_name, rects)
+    return {
+            "rects": rects,
+            "sheet_nos_for_errors": sheet_nos_for_errors
+           }
+
+def save_rects_and_errors_for_all_items(username, quiz_name):
+    output = find_items_and_headers_for_all_items(username, quiz_name)
+    rects = output["rects"]
+    sheet_nos_for_errors = output["sheet_nos_for_errors"]
+    save_rects(username, quiz_name, rects)
+    return output
+
+
+def crop_and_save_item_and_header_imgs_for_sheet(username, quiz_name, sheet_no, items, defaults):
+    sheet_im = open_sheet_im(username, quiz_name, sheet_no)
+
+    item_rects = None
+    header_rects = None
+    if(items):
+        item_rects = items["items"]
+        header_rects = items["headers"]
+    else:
+        item_rects = defaults["items"]
+        header_rects = defaults["headers"]
+
+    # crop and save items
+    for item_no, rect in enumerate(item_rects):
+        item_im = crop_out_item(sheet_im, rect)
+        save_item_im(item_im, username, quiz_name, item_no, sheet_no)
+    for header_no, rect in enumerate(header_rects):
+        header_im = crop_out_item(sheet_im, rect)
+        save_header_im(header_im, username, quiz_name, header_no, sheet_no)
+
 def save_items_and_headers_for_all_items(username, quiz_name):
+    output = find_items_and_headers_for_all_items(username, quiz_name)
+    rects = output["rects"]
+    sheet_nos_for_errors = output["sheet_nos_for_errors"]
+    save_rects(username, quiz_name, rects)
+    sheet_nos_for_errors = output["sheet_nos_for_errors"]
+
+    sheet_count = count_sheets(username, quiz_name)
+    for sheet_no in range(sheet_count):
+        items = rects[sheet_no]
+        defaults = rects[0]
+        crop_and_save_item_and_header_imgs_for_sheet(username, quiz_name, sheet_no, items, defaults)
+
+    return sheet_nos_for_errors
+    
+def X_save_items_and_headers_for_all_items(username, quiz_name):
     defaults = default_items(username, quiz_name)
     sheet_count = count_sheets(username, quiz_name)
     sheet_nos_for_errors = []
