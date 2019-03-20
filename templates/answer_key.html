@@ -46,7 +46,9 @@
     </li>
   {% for item in items%}
     <li class="list-group-item">
-      <img class="ans-item" src="{{item["src"]}}"> <input type="text" name="answer_{{item["item_no"]}}" value="{{item["value"]}}">
+      {# <img class="ans-item" src="{{item["src"]}}">  #}
+      {% include "_cropped_image_css_cropped_for_ans.html"  %}
+      <input type="text" name="answer_{{item["item_no"]}}" value="{{item["value"]}}">
     </li>
   {% endfor %}
   </ul>

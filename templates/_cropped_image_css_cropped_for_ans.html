@@ -1,0 +1,15 @@
+
+<style>
+  div.cropped-img-div-{{item['sheet_no']}}-{{item['item_no']}} {
+        height: {{item['dims']['height']}}px;
+        width:  {{item['dims']['width']}}px;
+        background-position: left -{{item['dims']['x']}}px top -{{item['dims']['y']}}px;
+        background-image: url(/sheet-img/{{item['username']}}/{{item['quiz_name']}}/{{item['sheet_no']}}.jpeg);
+        background-repeat: no-repeat;
+        background-size: auto;
+        display: inline-block;
+  }
+</style>
+
+<div class="cropped-img-div-{{item['sheet_no']}}-{{item['item_no']}} item-image-div"></div>
+

@@ -178,6 +178,8 @@ def quiz_answer_key(username, quiz_name):
         except:
             print("error in answer key processing")
 
+    bounding_boxes = get_bounding_boxes_for_quiz(username, quiz_name) 
+
     for item_no in range(item_count):
         ans = answer_key[item_no] if item_no < len(answer_key) else ''
         items.append( {'src': "/item-img/{}/{}/{}/{}".format(username, quiz_name, sheet_no, item_no),
@@ -185,7 +187,8 @@ def quiz_answer_key(username, quiz_name):
                  'item_no': item_no,
                  'username': username,
                  'quiz_name': quiz_name,
-                 'value': ans
+                 'value': ans,
+                 'dims': bounding_box_to_dims(bounding_boxes[item_no])
             } )
     return render_template("answer_key.html", username=username, quiz_name=quiz_name, items=items, item_count=len(items))
 
