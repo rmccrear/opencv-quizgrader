@@ -35,6 +35,7 @@ def users():
 def user_quizzes(username):
     quizzes = glob.glob('./score_data/' + username + "/processed_quizzes/*/")
     qs = [os.path.basename(os.path.normpath(q)) for q in quizzes]
+    qs.sort()
     finished_hash = {}
     for q in qs:
         finished_hash[q] = is_quiz_finished(username, q)
