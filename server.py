@@ -253,19 +253,27 @@ def quiz_to_students(username, quiz_name, semester, course):
     header_count = count_headers(username, quiz_name)
     sheet_count = count_sheets(username, quiz_name)
     quiz_headers = []
+    quiz_headers_with_dims = []
+    bounding_boxes = get_bounding_boxes_for_sheets(username, quiz_name)
     for sheet_no in range(sheet_count) :
+        header_bounding_boxes = bounding_boxes[sheet_no]["headers"]
+        dims_for_headers = [bounding_box_to_dims(bounding_box) for bounding_box in header_bounding_boxes]
+        hd = [ {
+                  "username": username,
+                  "quiz_name": quiz_name,
+                  "sheet_no": sheet_no,
+                  "dims": dims,
+                  "header_no": i
+                } for i, dims in enumerate(dims_for_headers) ]
         headers = {
+                  "username": username,
+                  "quiz_name": quiz_name,
                   "sheet_no": sheet_no,
                   "imgs": [],
-                  "data": [],
-                  "length": 0
+                  "data": ['' for i in  range(len(dims_for_headers))], #header count
+                  "length": 0,
+                  "dims_for_headers": hd
                 }
-        for header_no in range(header_count):
-            headers["imgs"].append({
-                    "img_src": "/header-img/{username}/{quiz_name}/{sheet_no}/{header_no}".format(username=username, quiz_name=quiz_name, sheet_no=sheet_no, header_no=header_no)
-                        })
-            headers["data"].append('')
-            headers["length"] += 1
         quiz_headers.append(headers)
 
     sheet_no2student_id = get_student_ids_for_quiz(username, quiz_name)
@@ -275,7 +283,7 @@ def quiz_to_students(username, quiz_name, semester, course):
     # sheet_no2student_id = get_sheets2student_ids(username, quiz_name)
     #if(len(sheet_no2student_id) < 1)):
     #    sheet_no2student_id = [s['student_id'] for s in s roster]
-    return render_template("quiz_to_students.html", username=username, quiz_name=quiz_name, quiz_headers=quiz_headers, json_roster=json_roster, sheet_no2student_id=json.dumps(sheet_no2student_id))
+    return render_template("quiz_to_students_css.html", username=username, quiz_name=quiz_name, quiz_headers=quiz_headers, json_roster=json_roster, sheet_no2student_id=json.dumps(sheet_no2student_id), quiz_headers_with_dims=quiz_headers_with_dims)
 
 @app.route("/save-students-for-quiz/<username>/<quiz_name>", methods=['POST'])
 def save_quiz_to_students(username, quiz_name):

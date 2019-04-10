@@ -98,18 +98,19 @@ def crop_and_save_item_and_header_imgs_for_sheet(username, quiz_name, sheet_no, 
         header_im = crop_out_item(sheet_im, rect)
         save_header_im(header_im, username, quiz_name, header_no, sheet_no)
 
-def save_items_and_headers_for_all_items(username, quiz_name):
+def save_items_and_headers_for_all_items(username, quiz_name, save_item_images=True):
     output = find_items_and_headers_for_all_items(username, quiz_name)
     rects = output["rects"]
     sheet_nos_for_errors = output["sheet_nos_for_errors"]
     save_rects(username, quiz_name, rects)
     sheet_nos_for_errors = output["sheet_nos_for_errors"]
 
-    sheet_count = count_sheets(username, quiz_name)
-    for sheet_no in range(sheet_count):
-        items = rects[sheet_no]
-        defaults = rects[0]
-        crop_and_save_item_and_header_imgs_for_sheet(username, quiz_name, sheet_no, items, defaults)
+    if save_item_images:
+      sheet_count = count_sheets(username, quiz_name)
+      for sheet_no in range(sheet_count):
+          items = rects[sheet_no]
+          defaults = rects[0]
+          crop_and_save_item_and_header_imgs_for_sheet(username, quiz_name, sheet_no, items, defaults)
 
     return sheet_nos_for_errors
     
@@ -199,7 +200,9 @@ def do_process_quiz(username, quiz_name, answer_key):
     rawpdf2imgs(username, quiz_name)
     rename_sheets(username, quiz_name)
     # answer_key = " ".join(["B A D D A",  "C B B C B"]).split(" ")
-    sheets_with_errors = save_items_and_headers_for_all_items(username, quiz_name)
+
+    # sheets_with_errors = save_items_and_headers_for_all_items(username, quiz_name)
+    sheets_with_errors = save_items_and_headers_for_all_items(username, quiz_name, save_item_images=False)
     save_quiz_data_files(username, quiz_name, 
                          answer_key=answer_key, 
                          sheets_with_errors=sheets_with_errors)

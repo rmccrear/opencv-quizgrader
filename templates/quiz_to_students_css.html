@@ -154,12 +154,11 @@ img.quiz-to-student-header {
   </script>
 {%for headers in quiz_headers%}
 <div class="quiz-to-student-header-container">
-  {%for i in range(headers["length"])%}
-    <div class="header-datum-container">
-      <p> <img class="quiz-to-student-header" "header-{{i}}" src="{{headers.imgs[i].img_src}}"> </p>
-      <p> <span class="header-data header-data-{{headers["sheet_no"]}}" id="header-data-{{headers["sheet_no"]}}-{{i}}">{{headers.data[i]}}</span> </p>
-    </div>
-  {%endfor%}
+    {%for header in headers["dims_for_headers"]%}
+      <div class="header-datum-container">
+          {% include "_cropped_image_css_cropped_for_header.html"  %}
+      </div>
+    {%endfor%}
 
   <a href="/sheet-img/{{username}}/{{quiz_name}}/{{headers["sheet_no"]}}.jpeg")" target="_new" tabindex="-1"> (sheet) </a>
   <div class="header-input-container">
