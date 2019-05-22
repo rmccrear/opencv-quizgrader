@@ -64,6 +64,9 @@ img.quiz-to-student-header {
         const headerData = roster[student_id];
         setHeaderDataFor(sheet_no, headerData);
         input.blur();
+        setTimeout(()=>{
+          $(input).autocomplete("close");
+        }, 310); // autocomplete delay is 300, so we close it immediately
       }
       else {
         clearHeaderDataFor(sheet_no);
@@ -116,10 +119,12 @@ img.quiz-to-student-header {
       //  .map(pair => encodeURIComponent(''+pair[0]) + '=' + encodeURIComponent(''+pair[1]) )
       //  .join('&'); 
       //console.log(post_data);
+      const csrf_token = "{{ csrf_token() }}";
       fetch(endpoint, {
         method: 'post',
         headers: {
-          'content-type': 'application/json'
+          'content-type': 'application/json',
+          'X-CSRFToken': csrf_token
         },
         body: JSON.stringify(data)
       }).then((results) => {
@@ -175,5 +180,25 @@ img.quiz-to-student-header {
 <p>
   <span class="missing"></span>
 </p>
+
 <button id="submit-students">Submit Student IDs</button>
 <p> <a href="/quiz/{{username}}/{{quiz_name}}"> back to quiz </a></p>
+
+<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script>
+    $(function(){
+      const stuIds = roster_list.map((s)=>s.student_id);
+      $('input.student-id-input').autocomplete({
+        source: stuIds,
+        minLength: 2,
+        select: function(event, ui) {
+          const sheetNo = this.attributes['data-sheet_no'].value;
+          const val = ui.item.value;
+          searchAndSet(val, sheetNo);
+        }
+      });
+    });
+  </script>
+

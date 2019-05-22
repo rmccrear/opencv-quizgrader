@@ -196,9 +196,10 @@ def save_quiz_data_files(username, quiz_name, answer_key, sheets_with_errors=[])
     write_cv_data(username, quiz_name, cv_data, answer_key, corrections)
     
 from quizitemfinder.process_pdf import rawpdf2imgs, rename_sheets
-def do_process_quiz(username, quiz_name, answer_key):
-    rawpdf2imgs(username, quiz_name)
-    rename_sheets(username, quiz_name)
+def do_process_quiz(username, quiz_name, answer_key, do_pdf_processing=True):
+    if(do_pdf_processing):
+        rawpdf2imgs(username, quiz_name)
+        rename_sheets(username, quiz_name)
     # answer_key = " ".join(["B A D D A",  "C B B C B"]).split(" ")
 
     # sheets_with_errors = save_items_and_headers_for_all_items(username, quiz_name)

@@ -27,6 +27,7 @@
 <hr>
 <h1 class="step-header"> Step 1: Grade </h1>
 <h2 class="step-header"> Grade by answer </h2>
+{% if has_answer_key %}
 <ul class="list pagination">
 {%for answer in answers%}
   <li class="page-item">
@@ -34,7 +35,6 @@
   </li>
 {%endfor%}
 </ul>
-<p> Set answer key: <a href="/quiz-answer-key/{{username}}/{{quiz_name}}" class="btn btn-outline-dark"> go to set answer key</a> </p>
 
 <h2 class="step-header"> <u>or</u>: Grade by item </h2>
 <div style="width: 80%;">
@@ -48,32 +48,48 @@
   </ul>
 </nav>
 </div>
+{% endif %}
 
 <p>
 Set answer key: <a href="/quiz-answer-key/{{username}}/{{quiz_name}}" class="btn btn-outline-dark"> go to set answer key</a>
 </p>
 <hr>
 <h1 class="step-header"> Step 2: Student names and ids </h1>
+{% if not has_roster_file %}
 <p> Set Rosters in score_data/{username}/my_courses/{semester}/{course_id}/roster.csv </p>
+{% endif %}
 <p>
 Set student ids: <a class="btn btn-outline-dark" href="/quiz-headers/{{username}}/{{quiz_name}}/{{semester}}/{{course_name}}"> go to set student ids</a>
 </p>
 
-<p>
-Finish Quiz when grading is complete: <a class="btn btn-outline-dark" href="/finish-quiz/{{username}}/{{quiz_name}}"> submit </a> <span class="text-muted"> (May take a few minutes) <span>
-</p>
+{% if has_student_ids_in_place and has_answer_key%}
+
+{% endif %}
 
 <hr>
 <h1 class="step-header"> Step 3: Access Results </h1>
-<p>
-Overlay: <a href="/finished-quiz/overlay/{{username}}/{{quiz_name}}/{{quiz_name}}.pdf"> Overlay PDF </a>
-    <p>
-Overlay: <a href="/finished-quiz/reversed-overlay/{{username}}/{{quiz_name}}/{{quiz_name}}.pdf"> Overlay PDF (reversed) </a>
+{% if has_been_finished and has_answer_key%}
 <p>
 Graded: <a href="/finished-quiz/graded/{{username}}/{{quiz_name}}/{{quiz_name}}.pdf"> Graded PDF </a>
 </p>
 <p>
 CSV score spreadsheet: <a href="/quiz-scores/{{username}}/{{quiz_name}}.csv"> CSV </a>
 </p>
+<p>
+Overlay: <a href="/finished-quiz/overlay/{{username}}/{{quiz_name}}/{{quiz_name}}.pdf"> Overlay PDF </a>
+<p>
+Overlay: <a href="/finished-quiz/reversed-overlay/{{username}}/{{quiz_name}}/{{quiz_name}}.pdf"> Overlay PDF (reversed) </a>
+<p>
+Resubmit Quiz if you make any changes: <a class="btn btn-outline-dark" href="/finish-quiz/{{username}}/{{quiz_name}}"> resubmit </a> <span class="text-muted"> (May take a few minutes) <span>
+</p>
 </div>
+{% elif has_student_ids_in_place and has_answer_key%}
+<p>
+Finish Quiz when grading is complete: <a class="btn btn-outline-dark" href="/finish-quiz/{{username}}/{{quiz_name}}"> submit </a> <span class="text-muted"> (May take a few minutes) <span>
+</p>
+{% else %}
+<p>
+  (Finish steps one and two first.)
+</p>
+{% endif %}
 {% endblock %}

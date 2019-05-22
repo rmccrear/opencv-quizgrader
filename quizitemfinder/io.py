@@ -107,6 +107,12 @@ def count_headers(username, quiz_name):
         path = header_im_path(username, quiz_name, header_count, sheet_no)
     return header_count
 
+def has_roster(username, semester, course, data_path=DATA_PATH):
+    p = '{data_path}/{username}/my_courses/{semester}/{course}/roster.csv'.format(data_path=data_path, username=username, semester=semester, course=course)
+    path = Path(p)
+    return path.exists()
+
+
 def get_roster(username, semester, course, data_path=DATA_PATH):
     path = '{data_path}/{username}/my_courses/{semester}/{course}/roster.csv'.format(data_path=data_path, username=username, semester=semester, course=course)
     with open(path, 'r') as f:

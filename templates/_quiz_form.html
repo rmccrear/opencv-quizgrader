@@ -5,6 +5,7 @@
 <p> Name the file like this: <span style="font-family: monospace;"> SEMESTER--COURSE-NAME--QUIZ-NAME.pdf</span> . For example: <span style="font-family: monospace;"> 106-2--ENG-101--Quiz-1.pdf </span></p>
 <form id="new-form" method="POST" enctype="multipart/form-data">
   <div class="form-group">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <label>Semester:</label>
     <input type="text" class="form-text" name="semester" placeholder="semester e.g. 106-2">
   </div>

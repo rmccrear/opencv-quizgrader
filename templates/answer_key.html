@@ -32,17 +32,27 @@
 
   <div class="card">
     <div class="card-body">
-      Set answer key for {{quiz_name}}
+      <p> Set answer key for {{quiz_name}} </p>
+      {% if have_saved_answer_key %}
+      <p>
+        <form method="POST" action="/quiz-auto-grade/{{username}}/{{quiz_name}}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+          Click here to use ML to automatically grade. 
+          <input class="btn btn-primary" type="submit" value="Auto Grade">
+        </form>
+      </p>
+      {% endif %}
     </div>
   </div>
 
 <form method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
   <H2> Answer key for {{quiz_name}} </H2>
   <ul class="list-group list-group-flush">
     <li class="list-group-item">
       Image from Answer Key
       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-      Please key-in the answer manually from the answer key.
+      Please {% if has_auto_predicted_answer_key %} double check {% else %} key-in {% endif %} the answer manually from the answer key.
     </li>
   {% for item in items%}
     <li class="list-group-item">
@@ -63,9 +73,12 @@
   </p>
 </form>
 </div>
+  {#
 <div>
   <form method="POST" action="/quiz-auto-grade/{{username}}/{{quiz_name}}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <input class="btn btn-primary" type="submit" value="Auto Grade">
   </form>
 </div>
+   #}
 {% endblock %}

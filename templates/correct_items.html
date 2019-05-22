@@ -14,6 +14,9 @@
       width: 100%;
       height: 100%;
   }
+  .top-correct-incorrect-controls {
+    width: 200px;
+  }
 
     .items-list-container {
       display: table-cell;
@@ -95,36 +98,51 @@
     ul.nav li {
       background-color: #CACFD4;
     }
+
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container"> 
-  <br><br><br>
-<div class="card">
-  <div class="card-body">
-  Click on an item to mark it correct or incorrect.
-  </div>
-</div>
-<br>
 
-<ul class="nav" id="correction-nav" role="tablist">
-  <li id="show-both-correct-and-incorrect" role="presentation" class="nav-item"> <a class="nav-link" role="tab" href="#"> show all </a> </li>
-  <li id="show-correct" role="presentation" class="nav-item"> <a  class="nav-link" role="tab" href="#">show correct</a> </li>
-  <li id="show-incorrect" role="presentation" class="nav-item"> <a class="nav-link" role="tab" href="#"> show incorrect </a> </li>
-</ul>
-<button id="toggleType"> toggle hide or show </button>
-<br>
-<div id="toggleCurrent">showing all</div>
-<br>
+
+{#<button id="toggleType"> toggle hide or show </button>#}
+
 <div class="scoring-container container">
   <div class="items-list-container">
+
+    <div class="card instructions" id="instructions">
+      <div class="card-body">
+        Click on an item to mark it correct or incorrect. First double check correct answers. Then double check incorrect answers.
+      </div>
+    </div>
+
+    <button type="button" class="list-group-item list-group-item-action show-both-correct-and-incorrect"> show all </button>
+    <button type="button" class="list-group-item list-group-item-action show-correct"> show correct only </button>
+    <button type="button" class="list-group-item list-group-item-action show-incorrect"> show incorrect only </button>
+
+    <div class="card instructions">
+      <div class="card-body bg-secondary">
+        <h4 id="toggleCurrent"> showing all </h4> 
+      </div>
+    </div>
+
     <ul class="list-group">
     {% for item in items %}
       {% include "_cropped_image_css_cropped.html" %}
       {# include "_cropped_image_precropped.html" #}
     {% endfor %}
+
+
+      <button type="button" class="list-group-item list-group-item-action show-both-correct-and-incorrect"> show all </button>
+      <button type="button" class="list-group-item list-group-item-action show-correct"> show correct only </button>
+      <button type="button" class="list-group-item list-group-item-action show-incorrect"> show incorrect only </button>
     </ul>
+    <div class="card instructions" id="instructions-2">
+      <div class="card-body">
+        First double check correct answers. Then double check incorrect answers.
+      </div>
+    </div>
   </div>
     <div class="current-sheet-container-outer">
       <div class="answer-value"> <h2> <span class="answer-value-label"> correct answer: </span>  {{answer_value}} </h2> </div>
@@ -147,12 +165,17 @@
 <script src="https://unpkg.com/jquery@3.3.1/dist/jquery.js"> </script>
 <script>
 
+  function scrollToTop(){
+    const top = document.getElementById("instructions")
+    top.scrollIntoView(true);
+  }
+
   function genItemId(username, quiz_name, sheet_no, item_no){
     var id = "item-" + username + "-" + quiz_name + "-" + sheet_no + "-" + item_no;
     return id;
   }
 
-  var AUTH_TOKEN = window.localStorage.getItem('quizgrader_auth_token');
+  // var AUTH_TOKEN = window.localStorage.getItem('quizgrader_auth_token');
 
   var toggleLastItem = (function tli() {
     var lastItemId = '';
@@ -176,6 +199,7 @@
     setItemCorrectionInDOM(username, quiz_name, sheet_no, item_no, value);
     // var url = `/corrections/set/${username}/${quiz_name}/${sheet_no}/${item_no}/${value}`;
     var url = `/corrections/set-items/${username}/${quiz_name}/`;
+    var csrf_token = "{{ csrf_token() }}";
     var data = []
     data.push( {
       item_no: item_no,
@@ -188,6 +212,7 @@
         body: JSON.stringify(data),
         headers: {
             "Content-Type": "application/json; charset=utf-8",
+            'X-CSRFToken': csrf_token
         }
       }
     );
@@ -208,20 +233,26 @@
   ];
   let toggleIndex = 2;
   function showCorrectOrIncorrect(action){
+    $('.show-both-correct-and-incorrect').removeClass('active');
+    $('.show-incorrect').removeClass('active');
+    $('.show-correct').removeClass('active');
     if(action === "incorrect") {
       $(".incorrect").removeClass("hidden");
       $(".correct").addClass("hidden");
+      $('.show-incorrect').addClass('active');
     }
     else if(action === "correct"){
       $(".incorrect").addClass("hidden");
       $(".correct").removeClass("hidden");
+      $('.show-correct').addClass('active');
     }
     else if(action === "all"){
       $(".incorrect").removeClass("hidden");
       $(".correct").removeClass("hidden");
+      $('.show-both-correct-and-incorrect').addClass('active');
     }
-    $('#toggleCurrent').text("showing " + action);
-
+    $('#toggleCurrent').text("Showing " + action + " items.");
+    scrollToTop();
   }
   function toggleHidden(){
     toggleIndex = (toggleIndex + 1) % toggleTypes.length
@@ -237,9 +268,9 @@
   }
   $(function(){
     $('#toggleType').on("click", toggleHidden);
-    $('#show-correct').on('click', ()=>showCorrectOrIncorrect('correct'))
-    $('#show-incorrect').on('click', ()=>showCorrectOrIncorrect('incorrect'))
-    $('#show-both-correct-and-incorrect').on('click', ()=>showCorrectOrIncorrect('all'))
+    $('.show-correct').on('click', ()=>showCorrectOrIncorrect('correct'))
+    $('.show-incorrect').on('click', ()=>showCorrectOrIncorrect('incorrect'))
+    $('.show-both-correct-and-incorrect').on('click', ()=>showCorrectOrIncorrect('all'))
     $("li.item").on("click", function(){
       var item_no = $(this).data('item-no');
       var sheet_no = $(this).data('sheet-no');
@@ -261,6 +292,7 @@
     var username = $('li.item').first().data('username');
     var quiz_name = $('li.item').first().data('quiz-name');
     $('#current-sheet-img').attr('src', `/sheet-img/${username}/${quiz_name}/1.jpeg`)
+    showCorrectOrIncorrect('correct')
   });
 
 </script> 

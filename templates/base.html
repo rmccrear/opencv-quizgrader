@@ -17,19 +17,24 @@
 {% block head %}{%endblock%}
 
 </head>
-
-<nav aria-label="breadcrumb">
-  <ol class="breadcrumb">
+<body>
+<nav class="navbar navbar-light bg-light" aria-label="breadcrumb">
+  <ol class="breadcrumb bg-light">
     {% if username %}
-    <li class="breadcrumb-item"><a href="/quizzes/{{ username }}"> {{ username }} </a>
+      <li class="breadcrumb-item">
+        <a href="{{url_for('user_quizzes', username=username)}}"> {{ username }} </a>
       </li>
     {% endif %}
     {% if username and quiz_name %}
-    <li class="breadcrumb-item"><a href="/quiz/{{ username }}/{{ quiz_name }}">  {{quiz_name}} </a> 
-      </li>
+    <li class="breadcrumb-item">
+      <a href="{{ url_for('present_quiz', username=username, quiz_name=quiz_name) }}">  {{quiz_name}} </a> 
+    </li>
     {% endif %}
   </ol>
+  <a class="nav-link" href="{{url_for('logout_user_route')}}"> Logout {{current_user.get_id()}}</a>
+
 </nav>
 <section class="content">
   {% block content %}{% endblock %}
 </section>
+</body>
