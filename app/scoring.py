@@ -224,7 +224,15 @@ def setup_scoring(app):
         items = make_items_for_particular_answer(username, quiz_name,  answer_value)
         items_in_sheets = make_corrections(username, quiz_name)
         sheet_dims = find_sheet_dims(username, quiz_name, 0)
-        return render_template("correct_items.html", items=items, items_in_sheets=items_in_sheets, answer_value=answer_value, username=username, quiz_name=quiz_name, sheet_dims=sheet_dims)    
+        answer_key = get_answer_key(username, quiz_name)
+        next_item_url = False
+        next_item_val = False
+        possible_answers = list(set(answer_key))
+        possible_answers.sort()
+        if(possible_answers.index(answer_value)+1<len(possible_answers)):
+            next_item_val = possible_answers[possible_answers.index(answer_value)+1]
+            next_item_url = "/items-for-value/{}/{}/{}".format(username, quiz_name, next_item_val)
+        return render_template("correct_items.html", items=items, items_in_sheets=items_in_sheets, answer_value=answer_value, username=username, quiz_name=quiz_name, sheet_dims=sheet_dims, next_item_val=next_item_val, next_item_url=next_item_url)    
 
     def make_items_for_particular_answer(username, quiz_name,  answer):
         indeces = get_indeces_for_value(username, quiz_name, answer)

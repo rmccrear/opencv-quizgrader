@@ -143,6 +143,9 @@
         First double check correct answers. Then double check incorrect answers.
       </div>
     </div>
+      {% if next_item_url %}
+        <a href="{{next_item_url}}" type="button" class="list-group-item list-group-item-action go-to-next"> ➦ Go to next item "{{next_item_val}}"</a>
+      {% endif %}
   </div>
     <div class="current-sheet-container-outer">
       <div class="answer-value"> <h2> <span class="answer-value-label"> correct answer: </span>  {{answer_value}} </h2> </div>
@@ -162,7 +165,8 @@
 </div>
 
 </div>
-<script src="https://unpkg.com/jquery@3.3.1/dist/jquery.js"> </script>
+<script src="https://unpkg.com/jquery@3.3.1/dist/jquery.js" integrity="sha384-fJU6sGmyn07b+uD1nMk7/iSb4yvaowcueiQhfVgQuD98rfva8mcr1eSvjchfpMrH" crossorigin="anonymous"> </script>
+<script src="https://unpkg.com/underscore@1.9.1/underscore-min.js" integrity="sha384-5DWzr9S4agqS3WKvPrhFKJagpYyHOBsf3/DxuDKORyqCv2sYer9c/ExdhPOL8CGh" crossorigin="anonymous"></script>
 <script>
 
   function scrollToTop(){
@@ -195,27 +199,77 @@
     toggleLastItem(id);
     $(".item-in-sheet." + id).toggleClass('show-it');
   }
+
+  // correction_queue
+  function correction_queue_factory(url){
+    const my_correction_data = [];
+    let my_correction_queue_ready = true;
+    const csrf_token = "{{ csrf_token() }}";
+  }
+  const correction_data = [];
+  let correction_queue_ready = true;
+  function send_correction_fetch(url, data){
+    const csrf_token = "{{ csrf_token() }}";
+    return window.fetch(url,
+          {
+            method: 'POST',
+            body: JSON.stringify(data),
+            headers: {
+                "Content-Type": "application/json; charset=utf-8",
+                'X-CSRFToken': csrf_token
+            }
+          }
+        );
+  }
+  const do_correction_fetch = _.debounce(
+     function(username, quiz_name){
+        const csrf_token = "{{ csrf_token() }}";
+        const url = `/corrections/set-items/${username}/${quiz_name}/`;
+        const data = correction_data.splice(0, correction_data.length);
+        send_correction_fetch(url, data).then(function(myJson) {
+          console.log(JSON.stringify(myJson));
+          if(correction_data.length == 0){
+            correction_queue_ready = true;
+          } else {
+            sendCorrectionToServer(username, quiz_name, null);
+          }
+        });
+  }, 1000);
+  function sendCorrectionToServer(username, quiz_name, correction) {
+    const url = `/corrections/set-items/${username}/${quiz_name}/`;
+    if(correction) correction_data.push(correction);
+    console.log(correction_data);
+    if(correction_queue_ready && correction_data.length > 0){
+      do_correction_fetch(username, quiz_name);
+    }
+  }
   function setItemCorrection(username, quiz_name, sheet_no, item_no, value){
     setItemCorrectionInDOM(username, quiz_name, sheet_no, item_no, value);
     // var url = `/corrections/set/${username}/${quiz_name}/${sheet_no}/${item_no}/${value}`;
-    var url = `/corrections/set-items/${username}/${quiz_name}/`;
+    // var url = `/corrections/set-items/${username}/${quiz_name}/`;
     var csrf_token = "{{ csrf_token() }}";
-    var data = []
-    data.push( {
+    var correction = {
       item_no: item_no,
       sheet_no: sheet_no,
       value: value
-    } );
-    window.fetch(url,
-      {
-        method: 'POST',
-        body: JSON.stringify(data),
-        headers: {
-            "Content-Type": "application/json; charset=utf-8",
-            'X-CSRFToken': csrf_token
-        }
-      }
-    );
+    }
+    sendCorrectionToServer(username, quiz_name, correction);
+    // var data = []
+    // data.push( {
+      // item_no: item_no,
+      // sheet_no: sheet_no,
+      // value: value
+    // } );
+    // window.fetch(url,
+      // {
+        // method: 'POST',
+        // body: JSON.stringify(data),
+        // headers: {
+            // "Content-Type": "application/json; charset=utf-8",
+            // 'X-CSRFToken': csrf_token
+        // }
+      // }
+    // );
     /*
     $.ajax({
       method: "POST",
@@ -240,11 +294,13 @@
       $(".incorrect").removeClass("hidden");
       $(".correct").addClass("hidden");
       $('.show-incorrect').addClass('active');
+      $(".go-to-next").show();
     }
     else if(action === "correct"){
       $(".incorrect").addClass("hidden");
       $(".correct").removeClass("hidden");
       $('.show-correct').addClass('active');
+      $(".go-to-next").hide();
     }
     else if(action === "all"){
       $(".incorrect").removeClass("hidden");
@@ -297,5 +353,6 @@
 
 </script> 
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
 
 {% endblock %}
