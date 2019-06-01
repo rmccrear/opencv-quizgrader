@@ -128,7 +128,7 @@ def setup_auth(app, login_manager, secret_key):
         return "yes, {}".format(current_user.id)
 
 
-    @app.route("/users/login", methods=['GET', 'POST'])
+    @app.route("/users/login/", methods=['GET', 'POST'])
     def login_user_route():
         if request.method == 'GET':
             return render_template("login.html")

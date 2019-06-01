@@ -5,12 +5,15 @@ from flask import request, Response, redirect
 import csv
 import json
 import urllib
-
-app = Flask(__name__)
-app.config['SECRET_KEY'] = '12345'
-
 import glob
 import os
+
+
+app = Flask(__name__)
+#app.config['SECRET_KEY'] = '12345'
+#app.config['LOCAL'] = 'TRUE'
+app.config['LOCAL'] = os.environ.get('LOCAL', 'TRUE')
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', '12345')
 
 
 from quizitemfinder.io import create_quiz_directory_structure, header_im_path, count_headers, count_sheets, get_roster, set_student_ids_for_quiz, get_student_ids_for_quiz, set_scores_for_quiz, get_scores_for_quiz, get_answer_key, save_answer_key, get_corrections, error_sheet_path, error_corrected_sheet_path, get_sheets_with_errors, find_sheet_dims, is_quiz_finished, set_score_for_items
@@ -22,8 +25,8 @@ from flask_login import LoginManager, login_required
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-app.config['SECRET_KEY'] = '12345'
-app.config['LOCAL'] = 'TRUE'
+
+
 
 secret_key = app.config['SECRET_KEY'] 
 auth.setup_auth(app, login_manager, secret_key)
