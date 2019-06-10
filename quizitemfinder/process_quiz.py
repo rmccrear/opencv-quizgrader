@@ -59,7 +59,7 @@ def m_find_items_and_headers_for_single_sheet(args):
         sheet_im = open_sheet_im(username, quiz_name, sheet_no)
         items = items_in_sheet_with_error_check(username, quiz_name, sheet_no, defaults)
         t2 = time.time()
-        print('did cv items and header detection in {} sec.'.format(t2-t1))
+        print('found   headers for {} sheet in {} sec.'.format(sheet_no, t2-t1))
 
         #rects[sheet_no] = items
         #if(items is False):
