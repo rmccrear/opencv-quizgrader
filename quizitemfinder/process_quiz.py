@@ -55,8 +55,12 @@ def rects_for_sheets_with_errors(sheet_im, defaults):
 def m_find_items_and_headers_for_single_sheet(args):
         username, quiz_name, sheet_no, defaults = args
         print("finding headers for {} sheet.".format(sheet_no))
+        t1 = time.time()
         sheet_im = open_sheet_im(username, quiz_name, sheet_no)
         items = items_in_sheet_with_error_check(username, quiz_name, sheet_no, defaults)
+        t2 = time.time()
+        print('did cv items and header detection in {} sec.'.format(t2-t1))
+
         #rects[sheet_no] = items
         #if(items is False):
         #    sheet_nos_for_errors.append(sheet_no)
