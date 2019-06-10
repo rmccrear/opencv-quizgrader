@@ -1,3 +1,8 @@
+<style>
+  .submit-progress {
+    visibility: hidden;
+  }
+</style>
 
 
 <p> Upload a pdf file containing the scanned quizes.</p>
@@ -26,6 +31,9 @@
   <div style="display: none;"> Answer key: <textarea name="answer_key" rows=20 cols=20></textarea></div>
   <input id="submit-button" type="submit" value="Upload file">
   <span id="submit-message"></span>
+  <div class="progress submit-progress">
+  <div id="submit-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%"></div>
+  </div>
 
   <h4 onclick="javascript:document.getElementById('options-div').classList.add('shown')"> Options -&gt;</h4>
   <style>
@@ -49,6 +57,7 @@
     </div>
   </div>
 </form>
+<script src="/static/vendor/jquery.js"></script>
 <script>
 // automatically extract semester, course, and quiz name from filename
 // for example: SEMESTER--COURSE--QUIZNAME.pdf
@@ -66,7 +75,16 @@ document.getElementById('file-input').onchange = function (evt) {
     document.getElementsByName('quiz_name')[0].value = quiz_name;
   }
 };
-document.getElementById('submit-button').onclick = function (evt) {
+function start_progress_bar (){
+  const pb = $('#submit-progress-bar');
+  pb.css('visibility', 'visible');
+  pb.css('width', '20%');
+  let t = 20;
+  setInterval(()=>{pb.css('width', (t++) + '%'); t>100 ? (t=50, pb.addClass('bg-warning')) : 0;}, 1000)
+}
+document.getElementById('new-form').onsubmit = function (evt) {
+  $('#submit-button').attr("disabled", true);
   document.getElementById('submit-message').innerHTML = 'Please wait while your quiz is processed...This may take a few minutes.';
+  start_progress_bar()
 };
 </script>

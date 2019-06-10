@@ -51,6 +51,46 @@ def rects_for_sheets_with_errors(sheet_im, defaults):
     rects = find_rects_from_im(sheet_im, defaults)
     return rects
 
+#args = (username, quiz_name, sheet_no, defaults)
+def m_find_items_and_headers_for_single_sheet(args):
+        username, quiz_name, sheet_no, defaults = args
+        sheet_im = open_sheet_im(username, quiz_name, sheet_no)
+        items = items_in_sheet_with_error_check(username, quiz_name, sheet_no, defaults)
+        #rects[sheet_no] = items
+        #if(items is False):
+        #    sheet_nos_for_errors.append(sheet_no)
+        errors = False
+        if(items is False):
+            errors = sheet_no
+        return {
+                'rects': items,
+                'errors': errors
+        }
+import multiprocessing
+def m_find_items_and_headers_for_all_items(username, quiz_name):
+    defaults = default_items(username, quiz_name)
+    sheet_count = count_sheets(username, quiz_name)
+    sheet_nos_for_errors = []
+
+    args_for_map = ((username, quiz_name, sheet_no, defaults) for sheet_no in range(sheet_count))
+    #vals = map(m_find_items_and_headers_for_single_sheet, args_for_map)
+    with multiprocessing.Pool(processes=3) as pool:
+       vals = pool.map(m_find_items_and_headers_for_single_sheet, args_for_map)
+
+    rects = [val['rects'] for val in vals]
+    for val in vals:
+        if(val['errors'] is not False):
+            sheet_nos_for_errors.append(val['errors'])
+
+    #for sheet_no in range(sheet_count):
+    #    val = m_find_items_and_headers_for_single_sheet((username, quiz_name, sheet_no, defaults))
+    #    rects[sheet_no] = val['rects']
+    #    if(val['errors'] is not False):
+    #        sheet_nos_for_errors.append(sheet_no)
+    return {
+            "rects": rects,
+            "sheet_nos_for_errors": sheet_nos_for_errors
+           }
     
 def find_items_and_headers_for_all_items(username, quiz_name):
     defaults = default_items(username, quiz_name)
@@ -71,7 +111,8 @@ def find_items_and_headers_for_all_items(username, quiz_name):
            }
 
 def save_rects_and_errors_for_all_items(username, quiz_name):
-    output = find_items_and_headers_for_all_items(username, quiz_name)
+    #output = find_items_and_headers_for_all_items(username, quiz_name)
+    output = m_find_items_and_headers_for_all_items(username, quiz_name)
     rects = output["rects"]
     sheet_nos_for_errors = output["sheet_nos_for_errors"]
     save_rects(username, quiz_name, rects)
@@ -99,12 +140,14 @@ def crop_and_save_item_and_header_imgs_for_sheet(username, quiz_name, sheet_no, 
         save_header_im(header_im, username, quiz_name, header_no, sheet_no)
 
 def save_items_and_headers_for_all_items(username, quiz_name, save_item_images=True):
-    output = find_items_and_headers_for_all_items(username, quiz_name)
+    # output = find_items_and_headers_for_all_items(username, quiz_name)
+    output = m_find_items_and_headers_for_all_items(username, quiz_name)
     rects = output["rects"]
     sheet_nos_for_errors = output["sheet_nos_for_errors"]
     save_rects(username, quiz_name, rects)
     sheet_nos_for_errors = output["sheet_nos_for_errors"]
 
+    # only save if flag it True. We don't need to do this anymore, actually.
     if save_item_images:
       sheet_count = count_sheets(username, quiz_name)
       for sheet_no in range(sheet_count):
@@ -196,18 +239,12 @@ def save_quiz_data_files(username, quiz_name, answer_key, sheets_with_errors=[])
     write_cv_data(username, quiz_name, cv_data, answer_key, corrections)
     
 from quizitemfinder.process_pdf import rawpdf2imgs, rename_sheets
-def do_process_quiz(username, quiz_name, answer_key, do_pdf_processing=True):
-    if(do_pdf_processing):
-        rawpdf2imgs(username, quiz_name)
-        rename_sheets(username, quiz_name)
-    # answer_key = " ".join(["B A D D A",  "C B B C B"]).split(" ")
 
-    # sheets_with_errors = save_items_and_headers_for_all_items(username, quiz_name)
-    sheets_with_errors = save_items_and_headers_for_all_items(username, quiz_name, save_item_images=False)
-    save_quiz_data_files(username, quiz_name, 
-                         answer_key=answer_key, 
-                         sheets_with_errors=sheets_with_errors)
-    # save error sheets
+def do_pdf2jpg(username, quiz_name):
+    rawpdf2imgs(username, quiz_name)
+    rename_sheets(username, quiz_name)
+
+def do_save_errors(username, quiz_name, sheets_with_errors):
     error_imgs = []
     corrected_imgs = []
     default_rects = open_rects(username, quiz_name)[0]
@@ -226,5 +263,56 @@ def do_process_quiz(username, quiz_name, answer_key, do_pdf_processing=True):
 
     
     return {"errors": sheets_with_errors}
+
+import time
+def do_process_quiz(username, quiz_name, answer_key, do_pdf_processing=True):
+    print('starting processing')
+    t1 = time.time()
+    if(do_pdf_processing):
+        do_pdf2jpg(username, quiz_name)
+    t2 = time.time()
+    print('did pdf2jpg in {} sec.'.format(t2-t1))
+
+    # answer_key = " ".join(["B A D D A",  "C B B C B"]).split(" ")
+
+    # sheets_with_errors = save_items_and_headers_for_all_items(username, quiz_name)
+    # do_cv_find_rects
+    t1 = time.time()
+    sheets_with_errors = save_items_and_headers_for_all_items(username, quiz_name, save_item_images=False)
+    t2 = time.time()
+    print('did cv items and header detection in {} sec.'.format(t2-t1))
+
+    # do_save_all_the_data into files
+    save_quiz_data_files(username, quiz_name, 
+                         answer_key=answer_key, 
+                         sheets_with_errors=sheets_with_errors)
+    print('did save data')
+    # save error sheets
+    return do_save_errors(username, quiz_name, sheets_with_errors)
     
 
+if __name__ == "__main__":
+    import sys
+    import timeit
+    username = sys.argv[1]
+    quiz_name = sys.argv[2]
+    answer_key = []
+    do_pdf_processing = True
+
+    print('benchmarking {} / {}'.format(username, quiz_name))
+    timed = timeit.timeit('do_pdf2jpg(username, quiz_name)', "from __main__ import do_pdf2jpg, username, quiz_name", number=1)
+    print("Completed do_pdf2jpg in: {} sec.".format(timed))
+
+    
+    timed = timeit.timeit('save_items_and_headers_for_all_items(username, quiz_name, save_item_images=False)', "from __main__ import save_items_and_headers_for_all_items, username, quiz_name", number=1)
+    print("Completed save_items_and_headers_for_all_items in: {} sec.".format(timed))
+
+    #if(do_pdf_processing):
+    #    do_pdf2jpg(username, quiz_name)
+    #sheets_with_errors = save_items_and_headers_for_all_items(username, quiz_name, save_item_images=False)
+    #save_quiz_data_files(username, quiz_name, 
+    #                     answer_key=answer_key, 
+    #                     sheets_with_errors=sheets_with_errors)
+    #errors = do_save_errors(username, quiz_name, sheets_with_errors)
+    #print("ERRORS:")
+    #print(errors)

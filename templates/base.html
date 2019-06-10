@@ -1,9 +1,39 @@
 <!doctype html>
 <head>
 <title>{% block title %}{% endblock %} - Quiz Grader</title>
-<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<link rel="apple-touch-icon" sizes="180x180" href="/static/favicon/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/static/favicon/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/static/favicon/favicon-16x16.png">
+<link rel="manifest" href="/static/favicon/site.webmanifest">
+<link rel="stylesheet" type="text/css" href="/static/vendor/bootstrap.min.css">
 <style>
   /* a:visited:not(.btn) { color: #551A8B; } */
+.navbar-custom {
+    background-color: #ffffcc;
+}
+/* change the brand and text color */
+.navbar-custom .navbar-brand,
+.navbar-custom .navbar-text {
+    color: red;
+}
+/* change the link color */
+.navbar-custom .navbar-nav .nav-link {
+    color: red;
+}
+/* change the color of active or hovered links */
+.navbar-custom .nav-item.active .nav-link,
+.navbar-custom .nav-item:hover .nav-link {
+    color: red;
+}
+.navbar-custom .breadcrumb-item a {
+    color: #CC6E6C;
+}
+a.nav-link {
+    color: #CC6E6C; 
+}
+
+
+
 
   a:visited{
     color: initial; 
@@ -18,8 +48,8 @@
 
 </head>
 <body>
-<nav class="navbar navbar-light bg-light" aria-label="breadcrumb">
-  <ol class="breadcrumb bg-light">
+<nav class="navbar navbar-light navbar-custom" aria-label="breadcrumb">
+  <ol class="breadcrumb navbar-custom">
     {% if username %}
       <li class="breadcrumb-item">
         <a href="{{url_for('user_quizzes', username=username)}}"> {{ username }} </a>
@@ -37,4 +67,8 @@
 <section class="content">
   {% block content %}{% endblock %}
 </section>
+  <script src="/static/vendor/jquery.js"></script>
+  <script src="/static/vendor/underscore.min.js"></script>
+  <script src="/static/vendor/bootstrap.min.js"></script>
+  {% block js %}{% endblock %}
 </body>

@@ -16,9 +16,49 @@ import os
 from quizitemfinder.io import create_quiz_directory_structure, header_im_path, count_headers, count_sheets, get_roster, has_roster, set_student_ids_for_quiz, get_student_ids_for_quiz, set_scores_for_quiz, get_scores_for_quiz, get_answer_key, save_answer_key, get_corrections, error_sheet_path, error_corrected_sheet_path, get_sheets_with_errors, find_sheet_dims, is_quiz_finished, set_score_for_items, is_quiz_finished
 from quizitemfinder.process_quiz import do_process_quiz
 from quizitemfinder.process_graded_sheets import save_graded_sheets_for_quiz, convert_graded_to_pdf
+import numpy as np
 
+
+def pointbiserialr(a,b):
+    return np.corrcoef(a,b)[0][1];
 
 def setup_scoring(app):
+
+    def pbc_level(item_desc):
+        if np.isnan(item_desc): return 'item-nan'
+        elif item_desc > 0.30: return 'item-very-good'
+        elif item_desc < 0.30 and item_desc > 0.20: return 'item-good'
+        elif item_desc < 0.20 and item_desc > 0.10: return 'item-ok'
+        elif item_desc < 0.10 : return 'item-bad'
+
+    def percent_correct_level(percent_correct):
+        if(percent_correct > 60):
+            return '60-100'
+        else:
+            return '0-60'
+
+    @app.route("/quiz-stats/<username>/<quiz_name>")
+    def stats_for_quiz(username, quiz_name):
+        corrections = get_corrections(username, quiz_name)
+        cc = corrections
+        dd = np.asarray(cc, dtype=np.float64, order='C')
+        
+        percent_correct_for_item = 100*np.sum(dd, 0)/len(dd)
+        #percent_correct_for_item_as_str = map(lambda x: "{:.0f}".format(x), percent_correct_for_item)
+
+        scores = np.sum(dd, 1)/len(dd[0])*100
+        item_discrimination = list(map(lambda n: pointbiserialr(scores, dd[:,n]), range(len(dd[0]))))
+
+        percent_correct_levels = list(map(percent_correct_level, percent_correct_for_item))
+        pbc_levels = list(map(pbc_level, item_discrimination))
+        tabular_data = [{'n': n, 'percent_correct': i[0], 'item_discr': i[1], 'item_discr_level': i[2], 'percent_correct_level': i[3]} for n, i in enumerate(zip(percent_correct_for_item, item_discrimination, pbc_levels, percent_correct_levels))]
+        
+        # item_discrimination_as_str = ["{:.2f}".format(i) for i in item_discrimination]
+
+        return render_template("stats.html", percent_correct_for_item=percent_correct_for_item, item_discrimination=item_discrimination, username=username, quiz_name=quiz_name, tabular_data=tabular_data)
+
+
+
 
    # MARK: headers and student ids
     @app.route("/quiz-headers/<username>/<quiz_name>/<semester>/<course>")
@@ -201,7 +241,17 @@ def setup_scoring(app):
                 rows.append(row)
             item_value = rows[sheet_no][item_no + CORR_LEFT_OFFSET]
         return item_value    
-    
+
+    def get_corrections(username, quiz_name):
+        filename = "./score_data/{0}/processed_quizzes/{1}/scoring/corrections.csv".format(username, quiz_name)
+        rows = []
+        with open(filename) as f:
+            reader = csv.reader(f)
+            for row in reader:
+                ## throw out first two cols (col1 = student_id, col2 = average for this item)
+                rows.append(row[CORR_LEFT_OFFSET:])
+                #rows.append(row)
+        return rows       
 
     @app.route("/items/<username>/<quiz_name>/<int:item_no>")
     @login_required
@@ -347,17 +397,7 @@ def setup_scoring(app):
         sheet_count = len(corrections)
         item_count = len(corrections[0])
         return item_count    
-
-    # def get_corrections(username, quiz_name):
-    #     filename = "./score_data/{0}/processed_quizzes/{1}/scoring/corrections.csv".format(username, quiz_name)
-    #     rows = []
-    #     with open(filename) as f:
-    #         reader = csv.reader(f)
-    #         for row in reader:
-    #             ## throw out first two cols (col1 = student_id, col2 = average for this item)
-    #             rows.append(row[CORR_LEFT_OFFSET:])
-    #             #rows.append(row)
-    #     return rows    
+ 
 
     #def write_default_corrections(username, quiz_name, quiz_id, sheet_count, item_count):
     #    filename = "score_data/{0}/processed_quizzes/{1}/scoring/corrections.csv".format(username, quiz_name, quiz_id)

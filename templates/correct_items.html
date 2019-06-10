@@ -145,6 +145,8 @@
     </div>
       {% if next_item_url %}
         <a href="{{next_item_url}}" type="button" class="list-group-item list-group-item-action go-to-next"> ➦ Go to next item "{{next_item_val}}"</a>
+      {% else %}
+        <a href="{{url_for('present_quiz', username=username, quiz_name=quiz_name)}}" type="button" class="list-group-item list-group-item-action go-to-next"> ➦ Back </a>
       {% endif %}
   </div>
     <div class="current-sheet-container-outer">
@@ -165,8 +167,9 @@
 </div>
 
 </div>
-<script src="https://unpkg.com/jquery@3.3.1/dist/jquery.js" integrity="sha384-fJU6sGmyn07b+uD1nMk7/iSb4yvaowcueiQhfVgQuD98rfva8mcr1eSvjchfpMrH" crossorigin="anonymous"> </script>
-<script src="https://unpkg.com/underscore@1.9.1/underscore-min.js" integrity="sha384-5DWzr9S4agqS3WKvPrhFKJagpYyHOBsf3/DxuDKORyqCv2sYer9c/ExdhPOL8CGh" crossorigin="anonymous"></script>
+<script src="/static/vendor/jquery.js"> </script>
+<script src="/static/vendor/underscore.min.js"></script>
+<script src="/static/vendor/bootstrap.min.js"></script>
 <script>
 
   function scrollToTop(){
@@ -352,7 +355,7 @@
   });
 
 </script> 
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
 
 
 {% endblock %}

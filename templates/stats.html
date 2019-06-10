@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Stats for Quiz: {{quiz_name}}
+{% endblock %}
+{% block head %}
+<style>
+ 	.item-nan {
+ 		color: black
+ 	}
+ 	.item-very-good{
+ 		color: green;
+ 	}
+ 	.item-good {
+ 		color: blue;
+ 	}
+ 	.item-ok{
+ 		color: orange;
+ 	}	
+ 	.item-bad {
+ 		color: red;
+ 	}
+ 	.percent-correct-0-60 {
+ 		color: red;
+ 	}
+ </style>
+{% endblock%}
+
+{% block content %}
+<section class="content">
+<div class="row">
+  <div class="col-sm-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">Percentage Correct</h5>
+        <p class="card-text">The table below shows the percentage of students who got the answer right (for each item).</p>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">PBC Item Discrimination</h5>
+        
+<p class="card-text">
+	This shows the correlation between a student getting this item correct and the overal score of that student.
+</p>
+<p class="card-text">See: <a href="https://www.uwosh.edu/testing/faculty-information/test-scoring/score-report-interpretation/item-analysis-1/item-ii"> item analysis at (www.uwosh.edu) </a>  for details about this statistical measure. </p>
+<pre>
+	<u>PBC</u>			<u>Interpretation</u>
+<span style="color: green;"> .30 and above			Very good items </span>
+<span style="color: blue;"> .20 to .29			Reasonably good items, but subject to improvement</span>
+<span style="color: orange;"> .10 to .19			Marginal items, usually needing improvement</span>
+<span style="color: red;"> .00 to .09			Poor items, to be rejected or revised</span>
+<span style="color: black;"> nan 				Usually means no student missed this item</span>
+</pre>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<table class="table">
+	<thead class="thead-dark">
+		<tr> <th>item</th> <th> % correct </th> <th> PBC Item Discrimination </th> </tr>
+	</thead>
+	<tbody>
+	{% for i in tabular_data %}
+		<tr> <td> {{ i['n']+1 }}  </td> <td class="percent-correct-{{i['percent_correct_level']}}"> {{ "{:.1f}".format(i['percent_correct']) }}% </td> <td class="{{i['item_discr_level']}}"> {{ "{:.2f}".format(i['item_discr']) }} </td> </tr>
+	{% endfor %}
+	</tbody>
+</table>
+<img src="{{ url_for('serve_sheet_img', username=username, quiz_name=quiz_name, sheet_no=1 )}}">
+</section>
+
+{% endblock %}

@@ -373,6 +373,6 @@ def write_cv_data(username, quiz_name, cv_data, answer_key, corrections):
 
 def is_quiz_finished(username, quiz_name):
     dir = quiz_loc(username, quiz_name)
-    p = dir + "sheets-graded/graded-sheets/graded-sheet-0.jpeg"
+    p = dir + "sheets-graded/graded-sheets/graded-sheets.pdf"
     path = Path(p)
     return path.exists()

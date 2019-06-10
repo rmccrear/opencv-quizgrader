@@ -27,7 +27,6 @@ def rename_sheets(username, quiz_name, sub_dir='sheets/', o_prefix='img-', o_suf
     quiz_dir = quiz_loc(username, quiz_name)
     sheets_dir = quiz_dir + sub_dir
     for filepath in glob.iglob(os.path.join(sheets_dir, i_search_glob)):
-        print(filepath)
         # rename img-01.jpg -> img-1.jpeg
         i = int(re.search(i_no_regex, filepath).groups()[-1])
         #filename2 = 'img-' + str(i-1) + '.jpeg'
@@ -42,9 +41,15 @@ def rawpdf2imgs(username, quiz_name, img_format='jpeg', sub_dir='sheets/img'):
     if(img_format == 'jpeg'): opts = '-jpeg';
     if(img_format == 'tiff'): opts = '-tiff';
     cmd = ['pdftoppm', opts, pdf_path, sheet_path]
+    t1 = time.time()
     subprocess.call(cmd)  
+    t2 = time.time()
+    print("did pdftoppm in {} sec.".format(t2-t1))
     time.sleep(1)
+    t1 = time.time()
     rename_sheets(username, quiz_name)
+    t2 = time.time()
+    print('did rename sheets in {} sec'.format(t2-t1))
     
 def cp_pdf_to_quiz_dir(pdf_loc, username, quiz_name):
     data_path = 'score_data'

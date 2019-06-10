@@ -15,6 +15,9 @@ app = Flask(__name__)
 app.config['LOCAL'] = os.environ.get('LOCAL', 'TRUE')
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', '12345')
 
+if(app.config['SECRET_KEY'] == '12345'):
+	print("WARNING: PLEASE SET SECRET_KEY environ variable!")
+
 
 from quizitemfinder.io import create_quiz_directory_structure, header_im_path, count_headers, count_sheets, get_roster, set_student_ids_for_quiz, get_student_ids_for_quiz, set_scores_for_quiz, get_scores_for_quiz, get_answer_key, save_answer_key, get_corrections, error_sheet_path, error_corrected_sheet_path, get_sheets_with_errors, find_sheet_dims, is_quiz_finished, set_score_for_items
 from quizitemfinder.process_quiz import do_process_quiz
