@@ -54,6 +54,7 @@ def rects_for_sheets_with_errors(sheet_im, defaults):
 #args = (username, quiz_name, sheet_no, defaults)
 def m_find_items_and_headers_for_single_sheet(args):
         username, quiz_name, sheet_no, defaults = args
+        print("finding headers for {} sheet.".format(sheet_no))
         sheet_im = open_sheet_im(username, quiz_name, sheet_no)
         items = items_in_sheet_with_error_check(username, quiz_name, sheet_no, defaults)
         #rects[sheet_no] = items

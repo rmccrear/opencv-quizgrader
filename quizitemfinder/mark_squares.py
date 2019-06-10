@@ -52,6 +52,9 @@ def fill_it(im, xy, modify_orig=False, color=0):
 def findConts(shapeMask):
     # find the contours in the mask
     cnts = cv2.findContours(255-shapeMask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if(cv2.__version__.split('.')[0] != '3'):
+        cnts = ['', cnts[0], cnts[1]]
+
     #print("I found {} black shapes".format(len(cnts[1])))
     return cnts
 
