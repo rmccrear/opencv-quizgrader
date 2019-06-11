@@ -78,9 +78,9 @@ def m_find_items_and_headers_for_all_items(username, quiz_name):
     sheet_nos_for_errors = []
 
     args_for_map = ((username, quiz_name, sheet_no, defaults) for sheet_no in range(sheet_count))
-    #vals = map(m_find_items_and_headers_for_single_sheet, args_for_map)
-    with multiprocessing.Pool(processes=3) as pool:
-       vals = pool.map(m_find_items_and_headers_for_single_sheet, args_for_map)
+    vals = map(m_find_items_and_headers_for_single_sheet, args_for_map)
+    #with multiprocessing.Pool(processes=3) as pool:
+    #   vals = pool.map(m_find_items_and_headers_for_single_sheet, args_for_map)
 
     rects = [val['rects'] for val in vals]
     for val in vals:
