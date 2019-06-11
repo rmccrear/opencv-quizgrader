@@ -8,6 +8,8 @@ import numpy as np
 
 def find_conts_in_answer_box(item_im):
     conts = cv2.findContours(item_im, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if(cv2.__version__.split('.')[0] != '3'):
+        cnts = ['', cnts[0], cnts[1]] # cv2 4.0 lost the first return arg
     return conts[1]
 
 

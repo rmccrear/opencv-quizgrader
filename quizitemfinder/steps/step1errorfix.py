@@ -112,7 +112,12 @@ def getContRect(cnt):
 
 def find_rects_from_im(sheet_im, reference_sheet_rects, debug=False):
     shape_mask = remove_bg(sheet_im)
-    _, contours, _ = cv2.findContours(255-shape_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    cnts = cv2.findContours(255-shape_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if(cv2.__version__.split('.')[0] != '3'):
+        cnts = ['', cnts[0], cnts[1]] # cv2 4.0 lost the first return arg
+    _, contours, _ =  cnts
+
     sheet_rects = sheet_rects_from_contours(reference_sheet_rects, contours)
     return sheet_rects
 

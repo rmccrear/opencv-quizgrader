@@ -11,7 +11,11 @@ def convert_xyhw_to_rect_pnts(xywh):
 def find_countours_of_numbering(im):
     imgray = im # cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
     ret,thresh = cv2.threshold(imgray,127,255,0)
-    im2, contours, hierarchy = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
+    cnts = cv2.findContours(thresh,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+    if(cv2.__version__.split('.')[0] != '3'):
+        cnts = ['', cnts[0], cnts[1]] # cv2 4.0 lost the first return arg
+    im2, contours, hierarchy = cnts
     return contours
 
 # find numbering location OK
