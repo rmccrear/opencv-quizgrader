@@ -19,7 +19,10 @@ def get_font_path(font_preference=font_preference):
         font_family = font_preference[n]
         fonts = fontconfig.query(family=font_family ,lang='en')
         if(len(fonts)>1):
-            path = fonts[0].file
+            font = fonts[0]
+            if(type(font) is type('str')): # for different version of fontconfig
+                font = fontconfig.FcFont(font)
+            path = font.file
         n = n+1
     if(path is None):
         raise Exception('Could not find font. Tried [{}]'.format(", ".join(font_preference)))

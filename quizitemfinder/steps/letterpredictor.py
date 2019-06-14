@@ -2,7 +2,8 @@ from sklearn import svm
 import numpy as np
 from joblib import dump, load
 from quizitemfinder.steps.datacollector import ImageDataCollector
-ML_SAVED_MODELS_FILE = './ml_data/clf_model.joblib'
+#ML_SAVED_MODELS_FILE = './ml_data/clf_model.joblib'
+ML_SAVED_MODELS_FILE = './ml_data/clf_model-2.joblib'
 
 class LetterPredictor:
     def __init__(self, quiz_ref, has_answers=True):
