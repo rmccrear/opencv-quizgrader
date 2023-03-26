@@ -1,4 +1,8 @@
-<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+{% extends "base.html" %}
+{% block title%}
+  Quizzes
+{% endblock %}
+{% block content %}
 <style>
   a:visited{
     color: initial; /*#551A8B; */
@@ -40,6 +44,10 @@
 </table>
 
 <p>
-  <a class="btn btn-primary"  href="/new-quiz/{{username}}"> New Quiz </a>
+  <a class="btn btn-primary m2"  href="/new-quiz/{{username}}"> New Quiz </a>
 </p>
+  <div>
+      <a class="btn btn-info m2" href="/semesters/{{username}}"> My Courses </a>
+  </div>
 </div>
+{% endblock %}

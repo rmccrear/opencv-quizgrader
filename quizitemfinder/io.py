@@ -9,12 +9,28 @@ from PIL import Image
 DATA_PATH = './score_data'
 CORR_LEFT_OFFSET = 2 # offset in corrections file
 
+def save_hotspots(username, quiz_name, header_hotspots, item_hotspots):
+    path = quiz_loc(username, quiz_name) + "/scoring/hotspots.json"
+    data = {'header_hotspots': header_hotspots, 'item_hotspots': item_hotspots}
+    with open(path, 'w') as data_file:
+        data_str = json.dump(data, data_file)
+
+def get_hotspots(username, quiz_name):
+    path = quiz_loc(username, quiz_name) + "/scoring/hotspots.json"
+    hotspots = {}
+    try:
+        with open(path, 'r') as data_file:
+            hotspots = json.load(data_file)
+    except:
+        hotspots = {}
+    return hotspots
 
 #def sheet_loc(quiz_name, sheet_no, data_path):
-#    path = data_path + "{}/sheets/img-{}.jpeg".format(quiz_name, sheet_no) 
+#    path = data_path + "{}/sheets/img-{}.jpeg".format(quiz_name, sheet_no)
 #    return path
 
 def quiz_loc(username, quiz_name, data_path=DATA_PATH):
+# Helper
     return "{}/{}/processed_quizzes/{}/".format(data_path, username, quiz_name)
 
 #def user_loc(username, data_path=DATA_PATH):
@@ -49,6 +65,10 @@ def count_sheets(username, quiz_name, data_path=DATA_PATH):
     return len(glob.glob(path + "*.jpeg"))
 
 
+# Depreciated
+# We wont save trimmed images
+#   If we want the image, 
+#   just use the cv_data.json file to lookup the dims of the image to trim
 def header_im_path(username, quiz_name, header_no, sheet_no, data_path=DATA_PATH):
     quiz_path = quiz_loc(username, quiz_name) #.format(data_path, username, quiz_name)
     path = quiz_path + 'trimmed_img/header.{}.n.{}.png'.format(sheet_no, header_no)
@@ -62,7 +82,7 @@ def item_im_path(username, quiz_name, item_no, sheet_no, data_path=DATA_PATH):
 def open_item_im(username, quiz_name, item_no, sheet_no, data_path=DATA_PATH):
     loc = item_im_path(username, quiz_name, item_no, sheet_no, data_path=data_path)
     return cv2.imread(loc, cv2.IMREAD_GRAYSCALE)
-    
+
 def letter_im_path(username, quiz_name, item_no, sheet_no, data_path=DATA_PATH):
     quiz_path = quiz_loc(username, quiz_name) #.format(data_path, username, quiz_name)
     path = quiz_path + 'trimmed_img/letter.{}.i.{}.png'.format(sheet_no, item_no)
@@ -96,9 +116,16 @@ def save_error_sheet_img(sheet_img, username, quiz_name, sheet_no, data_path=DAT
 def save_error_corrected_sheet_img(sheet_img, username, quiz_name, sheet_no, data_path=DATA_PATH):
     p = error_corrected_sheet_path(username, quiz_name, sheet_no, data_path=DATA_PATH)
     sheet_img.save(p)
-    
+
+
 def count_headers(username, quiz_name):
+    data = get_CV_data(username, quiz_name)
+    header_boxes = data['header_boxes']
+    return len(header_boxes)
+
+def count_headers_old(username, quiz_name):
     # discover how many headers we have...
+    # Do this by looking 
     header_count = 0
     sheet_no = 0 # <- const
     path = header_im_path(username, quiz_name, header_count, sheet_no)
@@ -111,6 +138,20 @@ def has_roster(username, semester, course, data_path=DATA_PATH):
     p = '{data_path}/{username}/my_courses/{semester}/{course}/roster.csv'.format(data_path=data_path, username=username, semester=semester, course=course)
     path = Path(p)
     return path.exists()
+
+def get_semesters(username,  data_path=DATA_PATH):
+    path = data_path + "/{}/my_courses/".format(username)
+    dirs = os.listdir(path)
+    semesters = [d for d in dirs if d[0] != '.']
+    return semesters
+
+def get_courses(username, semester, data_path=DATA_PATH):
+    path = data_path + "/{}/my_courses/{}/".format(username, semester)
+    dirs = os.listdir(path)
+    courses = [d for d in dirs if d[0] != '.']
+    print(path)
+    print(courses)
+    return courses
 
 
 def get_roster(username, semester, course, data_path=DATA_PATH):
@@ -128,6 +169,27 @@ def get_roster(username, semester, course, data_path=DATA_PATH):
             students.append(student)
     return students
 
+
+def save_roster(username, semester, course, roster_data, data_path=DATA_PATH):
+    create_course_dir(username, semester, course)
+    path = '{data_path}/{username}/my_courses/{semester}/{course}/roster.csv'.format(data_path=data_path, username=username, semester=semester, course=course)
+    with open(path, 'w+') as f:
+        writer = csv.writer(f)
+        writer.writerows(roster_data)
+
+
+
+def create_course_dir(username, semester, course, data_path=DATA_PATH):
+    path = '{data_path}/{username}/my_courses/{semester}/{course}/roster.csv'.format(data_path=data_path, username=username, semester=semester, course=course)
+    userpath = '{data_path}/{username}/'.format(data_path=data_path, username=username)
+    semesterpath = '{data_path}/{username}/my_courses/{semester}/'.format(data_path=data_path, username=username, semester=semester)
+    coursepath = '{data_path}/{username}/my_courses/{semester}/{course}/'.format(data_path=data_path, username=username, semester=semester, course=course)
+    ensure_dir(userpath)
+    ensure_dir(userpath + 'my_courses/')
+    ensure_dir(semesterpath)
+    ensure_dir(coursepath)
+
+
 def set_student_ids_for_quiz(username, quiz_name, student_ids):
     quiz_path = quiz_loc(username, quiz_name)
     path = quiz_path + 'scoring/corrections.csv'
@@ -140,7 +202,24 @@ def set_student_ids_for_quiz(username, quiz_name, student_ids):
         wr = csv.writer(outfile)        ####, quoting = csv.QUOTE_MINIMAL, dialect='excel')
         for row in rows:
             wr.writerow(row)
-            
+
+def set_predicted_student_ids(username, quiz_name, predicted):
+    quiz_path = quiz_loc(username, quiz_name)
+    path = quiz_path + 'scoring/predicted_student_ids.csv'
+    with open(path, 'w') as outfile:
+        wr = csv.writer(outfile)        ####, quoting = csv.QUOTE_MINIMAL, dialect='excel')
+        for row in predicted:
+            wr.writerow(row)
+
+def get_predicted_student_ids(username, quiz_name):
+    quiz_path = quiz_loc(username, quiz_name)
+    path = quiz_path + 'scoring/predicted_student_ids.csv'
+    try:
+        rows = read_csv_file(path)
+        return rows
+    except:
+        return []
+
 def get_student_ids_for_quiz(username, quiz_name):
     quiz_path = quiz_loc(username, quiz_name)
     path = quiz_path + 'scoring/corrections.csv'
@@ -152,7 +231,7 @@ def get_student_ids_for_quiz(username, quiz_name):
         student_ids.append(rows[i][0])
     if(has_them):
         return student_ids
-    else: 
+    else:
         return []
 
 # items = [(sheet_no, item_no, value)]
@@ -206,7 +285,7 @@ def set_score_data_for_quiz(username, quiz_name, rows):
 def get_answer_key(username, quiz_name):
     quiz_path = quiz_loc(username, quiz_name)
     path = quiz_path + 'scoring/answer_key.json'
-    with open(path) as data_file:    
+    with open(path) as data_file:
         data = json.load(data_file)
     return data
 
@@ -219,7 +298,7 @@ def save_answer_key(username, quiz_name, answer_key):
 def get_CV_data(username, quiz_name):
     quiz_path = quiz_loc(username, quiz_name)
     path = quiz_path + 'scoring/cv_data.json'
-    with open(path) as data_file:    
+    with open(path) as data_file:
         data = json.load(data_file)
     return data
 
@@ -292,7 +371,7 @@ def set_list_of_corrections(username, quiz_name, correction_list):
 
 
 
-    
+
 #def save_letter(letter_im, sheet_no, item_no, quiz_name, data_path="./data/processed-quizzes/"):
 #    #p = data_path  + "{}/s.{}.i.{}.png".format(quiz_name, sheet_no, item_no)
 #    p = letter_path(sheet_no, item_no, quiz_name, data_path=data_path)
@@ -347,10 +426,10 @@ def read_csv_file(path):
 #    wr = csv.writer(path, quoting = csv.QUOTE_MINIMAL, dialect='excel')
 #    for row in lists:
 #        wr.writerow(row)
-    
-# write initial data files for quiz   
+
+# write initial data files for quiz
 # import os.path
-def write_cv_data(username, quiz_name, cv_data, answer_key, corrections):
+def write_cv_data(username, quiz_name, cv_data, answer_key, corrections, overwrite_corrections=False):
     quiz_path = quiz_loc(username, quiz_name)
     cv_path = quiz_path + 'scoring/cv_data.json'
     with open(cv_path, 'w') as outfile:
@@ -361,10 +440,10 @@ def write_cv_data(username, quiz_name, cv_data, answer_key, corrections):
     if not os.path.isfile(answer_path):
         with open(answer_path, 'w') as outfile:
             print(answer_path)
-            json.dump(answer_key, outfile)    
+            json.dump(answer_key, outfile)
 
     corrections_path = quiz_path + 'scoring/corrections.csv'
-    if not os.path.isfile(corrections_path):
+    if overwrite_corrections or (not os.path.isfile(corrections_path)):
         with open(corrections_path, 'w') as outfile:
             # write_csv_file(outfile, corrections)
             wr = csv.writer(outfile, quoting = csv.QUOTE_MINIMAL, dialect='excel')

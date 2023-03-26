@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Crop img
+{% endblock %}
+{% block content %}
+<link rel="stylesheet" href="/static/vendor/cropper.css">
+<style>
+  .container {
+    margin: 20px auto;
+    max-width: 640px;
+  }
+  /* Limit image width to avoid overflow the container */
+  img {
+    max-width: 100%;/* This rule is very important, please do not ignore this! */
+  }
+</style>
+<div class="container">
+  <h1> Crop Quiz </h1>
+  <div>
+    <h2>Please select area of student's name, number, etc...</h2>
+    <div>
+      <img id="header-img" src="{{ url_for('serve_sheet_img', username=username, quiz_name=quiz_name, sheet_no=0 )}}">
+    </div>  
+  </div>
+  
+  <div>
+    <h2>Please select area of test items </h2>
+    
+    <div>
+      <img id="items-img" src="{{ url_for('serve_sheet_img', username=username, quiz_name=quiz_name, sheet_no=1 )}}">
+    </div>
+
+  </div>
+  <button id="done-btn" class="btn btn-success">OK</button>
+  <form id="rect-form" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <input type="hidden" id="items-rect" name="items-rect"></input>
+    <input type="hidden" id="headers-rect" name="headers-rect"></input>
+  </form>
+</div>
+{% endblock %}
+{% block js %}
+  <script src="/static/vendor/cropper.js"></script>
+  <script src="/static/app/cropper-app.js"></script>
+{% endblock %}

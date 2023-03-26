@@ -44,9 +44,11 @@ img.quiz-to-student-header {
     const roster_list = {{json_roster | safe}};
     let   defaultStudentIds = {{sheet_no2student_id | safe}};
     const roster = roster_list.reduce( (r, student) => (r[student.student_id] = student, r), {});
-    const search_terms_for_stu = roster_list.map( (s) => ({searchable: s.student_id + s.name, id: s.student_id}));
+
+    const search_terms_for_stu = roster_list.map( (s) => ({searchable: (s.student_id + s.name + s.email).toLowerCase(), id: s.student_id}));
     const searchRoster = (term) => {
-      const matches = search_terms_for_stu.filter( terms => terms.searchable.includes(term) );
+      term = term || '';
+      const matches = search_terms_for_stu.filter( terms => terms.searchable.includes(term.toLowerCase()) );
       if(matches.length > 0) {
         return matches.map((searchable) => searchable.id);
       }
@@ -90,6 +92,7 @@ img.quiz-to-student-header {
       elm.innerHTML = headerD.join(" | ")
     }
     const setDefaults = function(inputs){
+      console.log(defaultStudentIds)
       for(let i = 0; i < inputs.length; i++){
         const input = inputs[i];
         const sheetNo = input.attributes['data-sheet_no'].value;
@@ -102,6 +105,22 @@ img.quiz-to-student-header {
         }
       }
     } 
+    // const setPredictedIds = function(inputElms){
+    //   console.log(predictedStudentIds)
+    //   for(let i = 0; i < inputElms.length; i++){
+    //     const input = inputElms[i];
+    //     const sheetNo = input.attributes['data-sheet_no'].value;
+    //     if(sheetNo < predictedStudentIds.length){
+    //       predictedId = predictedStudentIds[sheetNo];
+    //       if(predictedId.length > 0){
+    //         predictedIdStr = predictedId.join('')
+    //         const elm = document.getElementById(`header-${sheetNo}`);
+    //         elm.value = predictedIdStr;
+    //         if(predictedIdStr) setHeaderDataFor(sheetNo, roster[predictedIdStr]);
+    //       }
+    //     }
+    //   }
+    // }
     const getAllInputData = () => {
       const inputs = document.querySelectorAll('.student-id-input');
       input_values = [];
@@ -148,6 +167,13 @@ img.quiz-to-student-header {
     document.addEventListener('DOMContentLoaded', function(){
       const inputs = document.querySelectorAll('.student-id-input');
       setDefaults(inputs);
+      //setPredictedIds(inputs);
+      // searchAndSetAll
+      document.querySelectorAll('.student-id-input').forEach((inputElm)=>{
+        const val = inputElm.value
+        const sheetNo = inputElm.getAttribute('data-sheet_no')
+        searchAndSet(val, sheetNo)
+      })
       for(let i = 0; i < inputs.length; i++){
         const input = inputs[i];
         input.addEventListener('input', onChange);
@@ -184,9 +210,9 @@ img.quiz-to-student-header {
 <button id="submit-students">Submit Student IDs</button>
 <p> <a href="/quiz/{{username}}/{{quiz_name}}"> back to quiz </a></p>
 
-<link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-<script src="https://code.jquery.com/jquery-1.12.4.js"></script>
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<link rel="stylesheet" href="/static/vendor/jquery-ui/jquery-ui.css">
+<script src="/static/vendor/jquery-ui/jquery-1.12.4.js"></script>
+<script src="/static/vendor/jquery-ui/jquery-ui.js"></script>
   <script>
     $(function(){
       const stuIds = roster_list.map((s)=>s.student_id);

@@ -143,7 +143,7 @@ def is_in_row(vert_pos, item, d):
     top_corner, bottom_corner = item
     x1, y1 = top_corner
     x2, y2 = bottom_corner
-    if abs(vert_pos-y1) < 10:
+    if abs(vert_pos-y1) < 10: # if y is within 10px, put it into this row
         return True
     else:
         return False
@@ -183,7 +183,9 @@ def my_flatten(list_of_lists):
     z = list_of_lists
     return list( (x for y in z for x in y) )
 
-def organize_found_items(items, header_rows=1, header_len=3, row_len=5, d=10):
+# TODO: check if we need too use 'd'
+# make the row len and header len more fexible
+def organize_found_items(items, header_rows=1, header_len=3, row_len=20, d=10):
     rows = put_into_rows(items, d=d)
     sort_rows_by_vert(rows)
     sort_rows_by_horz(rows, d=d)
@@ -305,6 +307,9 @@ def bounding_rect_to_rect(bounding_rect):
     x,y,w,h = bounding_rect
     return ((x,y), (x+w, y+h))
 
+#def whiteout_hotspot_background
+
+# This is the function we use to find the elements in the refrences sheet (sheet #0)
 def find_items_in_sheet_im(sheet_im, kernel_size=(2,2), iters=1, header_rows=1, d=10, area_min_max=(1000, 100000)):
     #rects = find_rects_in_img(sheet_im, kernel_size=kernel_size, iters=iters)
     _, conts, hierarchy = find_conts_for_im(sheet_im)
@@ -314,6 +319,7 @@ def find_items_in_sheet_im(sheet_im, kernel_size=(2,2), iters=1, header_rows=1, 
     #all_rects = [getContRect(c) for c in conts]
     #rects = [rect for rect in all_rects if area_of_rect(rect)>area_min_max[0] and area_of_rect(rect)<area_min_max[1]]
     return organize_found_items(rects, header_rows=1, d=10)
+
 def show_items_on_sheet_im(sheet_im, rects):
     im = sheet_im.copy()
     return show_rects_in_img(im, rects)

@@ -31,10 +31,13 @@ def left_of_rect(rect):
 def leftmost_contour_limit(rects, max_left):
     leftmosts_limits = [left_of_rect(r) for r in rects]
     leftmosts_limits = [l for l in leftmosts_limits if l<max_left]
+    print("leftmosts_limits")
+    print(leftmosts_limits)
     return max(leftmosts_limits)
 def find_leftmost_from_reference_cell(im):
     w = len(im[0])
     max_left = int(w/2)
+    #max_left = int(w-w/5)
     cc = find_countours_of_numbering(im)
     rects = bounding_rects_for_cc(cc)
     # print(rects)

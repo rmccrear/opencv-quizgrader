@@ -246,8 +246,9 @@ def save_quiz_data_files(username, quiz_name, answer_key, sheets_with_errors=[])
 from quizitemfinder.process_pdf import rawpdf2imgs, rename_sheets
 
 def do_pdf2jpg(username, quiz_name):
-    rawpdf2imgs(username, quiz_name)
-    rename_sheets(username, quiz_name)
+    sheet_names = rawpdf2imgs(username, quiz_name)
+    # sheet_names = rename_sheets(username, quiz_name)
+    return sheet_names
 
 def do_save_errors(username, quiz_name, sheets_with_errors):
     error_imgs = []

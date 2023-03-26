@@ -67,7 +67,7 @@
 	</thead>
 	<tbody>
 	{% for i in tabular_data %}
-		<tr> <td> {{ i['n']+1 }}  </td> <td class="percent-correct-{{i['percent_correct_level']}}"> {{ "{:.1f}".format(i['percent_correct']) }}% </td> <td class="{{i['item_discr_level']}}"> {{ "{:.2f}".format(i['item_discr']) }} </td> </tr>
+        <tr> <td> {{ i['n']+1 }} <span style="color: grey;"> ({{i['answer_key']}}) </span>  </td> <td class="percent-correct-{{i['percent_correct_level']}}"> {{ "{:.1f}".format(i['percent_correct']) }}% </td> <td class="{{i['item_discr_level']}}"> {{ "{:.2f}".format(i['item_discr']) }} </td> </tr>
 	{% endfor %}
 	</tbody>
 </table>

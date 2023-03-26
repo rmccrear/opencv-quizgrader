@@ -2,7 +2,7 @@
 from flask import Flask
 from flask import send_file
 from flask import render_template
-from flask import request, Response, redirect
+from flask import request, Response, redirect, make_response, jsonify
 from flask_login import login_required
 import csv
 import json
@@ -13,7 +13,7 @@ import glob
 import os
 
 
-from quizitemfinder.io import create_quiz_directory_structure, header_im_path, count_headers, count_sheets, get_roster, has_roster, set_student_ids_for_quiz, get_student_ids_for_quiz, set_scores_for_quiz, get_scores_for_quiz, get_answer_key, save_answer_key, get_corrections, error_sheet_path, error_corrected_sheet_path, get_sheets_with_errors, find_sheet_dims, is_quiz_finished, set_score_for_items, is_quiz_finished
+from quizitemfinder.io import create_quiz_directory_structure, header_im_path, count_headers, count_sheets, get_roster, has_roster, set_student_ids_for_quiz, get_student_ids_for_quiz, set_scores_for_quiz, get_scores_for_quiz, get_answer_key, save_answer_key, get_corrections, error_sheet_path, error_corrected_sheet_path, get_sheets_with_errors, find_sheet_dims, is_quiz_finished, set_score_for_items, is_quiz_finished, get_predicted_student_ids
 from quizitemfinder.process_quiz import do_process_quiz
 from quizitemfinder.process_graded_sheets import save_graded_sheets_for_quiz, convert_graded_to_pdf
 import numpy as np
@@ -39,6 +39,7 @@ def setup_scoring(app):
 
     @app.route("/quiz-stats/<username>/<quiz_name>")
     def stats_for_quiz(username, quiz_name):
+        answer_key = get_answer_key(username, quiz_name)
         corrections = get_corrections(username, quiz_name)
         cc = corrections
         dd = np.asarray(cc, dtype=np.float64, order='C')
@@ -51,7 +52,7 @@ def setup_scoring(app):
 
         percent_correct_levels = list(map(percent_correct_level, percent_correct_for_item))
         pbc_levels = list(map(pbc_level, item_discrimination))
-        tabular_data = [{'n': n, 'percent_correct': i[0], 'item_discr': i[1], 'item_discr_level': i[2], 'percent_correct_level': i[3]} for n, i in enumerate(zip(percent_correct_for_item, item_discrimination, pbc_levels, percent_correct_levels))]
+        tabular_data = [{'n': n, 'percent_correct': i[0], 'item_discr': i[1], 'item_discr_level': i[2], 'percent_correct_level': i[3], 'answer_key': i[4]} for n, i in enumerate(zip(percent_correct_for_item, item_discrimination, pbc_levels, percent_correct_levels, answer_key))]
         
         # item_discrimination_as_str = ["{:.2f}".format(i) for i in item_discrimination]
 
@@ -96,15 +97,34 @@ def setup_scoring(app):
             quiz_headers.append(headers)    
 
         sheet_no2student_id = get_student_ids_for_quiz(username, quiz_name)
+        
+        predicted_student_ids = [''.join(arr) for arr in get_predicted_student_ids(username, quiz_name)]
+        
         if(len(sheet_no2student_id ) < 1):
-            app.logger.error('no studdnt ids in place yet')
-            sheet_no2student_id = ['',''] + [s['student_id'] for s in roster]
+            app.logger.error('no student ids in place yet')
+            #sheet_no2student_id = ['',''] + [s['student_id'] for s in roster]
+            ids_in_roster = [s['student_id'] for s in roster]
+            guesstimates = [guess_student_id(pp, ids_in_roster) for pp in predicted_student_ids[2:]]
+            print(guesstimates)
+            sheet_no2student_id = ['', ''] + guesstimates
         # sheet_no2student_id = get_sheets2student_ids(username, quiz_name)
         #if(len(sheet_no2student_id) < 1)):
         #    sheet_no2student_id = [s['student_id'] for s in s roster]
-        return render_template("quiz_to_students_css.html", username=username, quiz_name=quiz_name, quiz_headers=quiz_headers, json_roster=json_roster, sheet_no2student_id=json.dumps(sheet_no2student_id), quiz_headers_with_dims=quiz_headers_with_dims)    
+        return render_template("quiz_to_students_css.html", username=username, quiz_name=quiz_name, quiz_headers=quiz_headers, json_roster=json_roster, sheet_no2student_id=json.dumps(sheet_no2student_id), quiz_headers_with_dims=quiz_headers_with_dims, predicted_student_ids=json.dumps(predicted_student_ids))    
 
 
+
+    def guess_student_id(prediction, roster):
+        print(prediction)
+        if(prediction in roster):
+            return prediction
+        elif(len(prediction) > 2):
+            roster_last3 = [i[-3:] for i in roster]
+            last3 = prediction[-3:]
+            if(last3 in roster_last3):
+                return last3
+        else:
+            return ''
 
 
 
@@ -282,7 +302,13 @@ def setup_scoring(app):
         if(possible_answers.index(answer_value)+1<len(possible_answers)):
             next_item_val = possible_answers[possible_answers.index(answer_value)+1]
             next_item_url = "/items-for-value/{}/{}/{}".format(username, quiz_name, next_item_val)
-        return render_template("correct_items.html", items=items, items_in_sheets=items_in_sheets, answer_value=answer_value, username=username, quiz_name=quiz_name, sheet_dims=sheet_dims, next_item_val=next_item_val, next_item_url=next_item_url)    
+
+        return_values = dict(items=items, items_in_sheets=items_in_sheets, answer_value=answer_value, username=username, quiz_name=quiz_name, sheet_dims=sheet_dims, next_item_val=next_item_val, next_item_url=next_item_url)    
+
+        if request.content_type != 'application/json':
+            return render_template("correct_items.html", **return_values)
+        else:
+            return make_response(jsonify(return_values), 200)
 
     def make_items_for_particular_answer(username, quiz_name,  answer):
         indeces = get_indeces_for_value(username, quiz_name, answer)
@@ -295,6 +321,8 @@ def setup_scoring(app):
     def make_items(username, quiz_name, item_no):
         sheet_count = get_sheet_count(username, quiz_name)
         corrections = get_corrections(username, quiz_name)
+        print(item_no)
+        print(corrections)
         corrections_for_i = [c[item_no] for c in corrections]
         bounding_boxes = get_bounding_boxes_for_sheets(username, quiz_name) # bounding boxes for sample sheet (sheet_no 0)
         items = [

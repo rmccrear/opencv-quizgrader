@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title%}
+  My Semsters
+{% endblock %}
+{% block content %}
+<style>
+  a:visited{
+    color: initial; /*#551A8B; */
+    text-decoration: underline;
+  }
+  a.btn:visited { color: #333; }
+  a.btn-danger:visited { color: #fff; }
+  a.btn-primary:visited { color: #fff; }
+
+</style>
+<br>
+<div class="container">
+<p>Choose semester or create new. </p>
+<table class="table">
+  <thead>
+    <tr>
+    <th> Semester  </th> <th> &nbsp; </th>
+    </tr>
+  </thead>
+  {%for semester in semesters%}
+  <tr>
+    <td>
+      <a href='/my-courses/{{username}}/{{semester}}'> {{semester}} </a>
+    </td>
+    <td>
+    </td>
+    <td>
+    </td>
+
+  </tr>
+  {%endfor%}
+</table>
+
+<p>
+<a class="btn btn-primary"  href="/roster-create/{{username}}"> new course </a>
+</p>
+</div>
+{% endblock %}

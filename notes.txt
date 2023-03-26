@@ -1,0 +1,11 @@
+
+// getRoster(teacher_id, semester, course_name)
+// setRoster(teacher_id, semester, course_name, roster)
+// addToRoster(teacher_id, semester, course_name, student)
+// removeFromRoster(teacher_id, semester, course_name, student_id)
+
+// createCourse(teacher_id, semester, course_name)
+
+// createQuiz(teacher_id, semester, course_name, quiz_name)
+// updateQuiz(teacher_id, semester, course_name, quiz_name)
+// getQuiz(teacher_id, semester, course_name, quiz_name)

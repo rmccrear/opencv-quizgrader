@@ -28,6 +28,26 @@ You also need poppler (a pdf utility)
 brew install poppler 
 ```
 
+You may also need tesseract langauges
+
+```
+brew install tesseract-lang 
+```
+
+You also need to train your models with the version of sklearn that you install. And if you update the version of sklearn that you use, you will need to update or retrain your models.
+You can train the models with this command. But first, make sure your train data is set up.
+
+```
+python ./scripts/cv/helpers_for_training.py
+```
+
+This will put a model file into the output directory. You can move it where you want, then edit config.py to point to your new model.
+
+You can grade a quiz from a pdf on the command line
+```
+python -m scripts.cv.main rmcc 111--course-name--test-name create_quiz 111--course-name--test-name.pdf 
+```
+
 Finally, start the local server with:
 
 ```

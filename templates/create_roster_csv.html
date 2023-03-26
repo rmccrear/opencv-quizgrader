@@ -1,0 +1,261 @@
+{% extends 'base.html' %}
+
+{% block title %}
+  Insert Roster
+{% endblock %}
+{% block content %}
+<style>
+  textarea#student-data-textarea {
+      width: 100%;
+      height: 400px;
+  }
+  .roster-textarea-container {
+      width: 45%;
+  }
+  .col {
+
+  }
+</style>
+<div class="container">
+  <h1> Roster </h1>
+  <div class="row">
+      <div class="col-lg">
+          <div class="form-group">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+              <input id="username-input" type="hidden" value="{{username}}" />
+              {% if semester %}
+                <h3> semester: {{semester}} </h3>
+                <input id="semester-input" type="hidden" value="{{semester}}"/>
+              {%else%}
+                <input id="semester-input" class="form-control" type="text" placeholder="semester (110-1)" />
+              {%endif%}
+              {% if course_name %}
+                <h3> course: {{course_name}} </h3>
+                <input id="course-name-input" type="hidden" value="{{course_name}}"/>
+              {%else%}
+                <input id="course-name-input" class="form-control" type="text" placeholder="course name (English 101)" />
+              {%endif%}
+          </div>
+      </div>
+  </div>
+  <div class="row">
+    <div class="roster-textarea-container col-sm">
+      <textarea id="student-data-textarea">{{csv}}</textarea>
+      <br>
+      <div>
+        <button id="update-button" class="btn btn-primary m-1"> Save </button>
+      </div>
+      <div>
+        <button id="toggle-sep" class="btn btn-outline-info m-1"> Toggle TAB - comma </button>
+        <button id="sort-roster" class="btn btn-outline-info m-1"> Sort roster in order </button>
+      </div>
+    </div>
+    <div col-sm><button> -&gt; </button></div>
+    <div id="student-roster-display" class="col-sm">
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block js %}
+          <script>
+$(function(){
+    $("textarea#student-data-textarea").on("input", rosterChanged);
+    rosterChanged.call($("textarea#student-data-textarea").get(0));
+    $("#update-button").click(doUpdate);
+    $("#toggle-sep").click(doToggleSep);
+    $("#sort-roster").click(doSortRoster);
+    $("#semester-input").on("change", cleanOnUpdate)
+    $("#course-name-input").on("change", cleanOnUpdate)
+})
+const checkParam = (param) => {
+    if(param){
+        return param
+    }
+    else {
+        return false
+    }
+}
+function doToggleSep(){
+    const val = $("textarea#student-data-textarea").val()
+    const toggled = toggleSep(val);
+    $("textarea#student-data-textarea").val(toggled)
+    rosterChanged.call($("textarea#student-data-textarea").get(0));
+}
+function getCSV(){
+    const ta = $("textarea#student-data-textarea");
+    const val = ta.val();
+    const csv = csvText2arr(val);
+    console.log(csv)
+    return csv;
+}
+function setCSV(csv){
+  const ta = $("textarea#student-data-textarea");
+  ta.val(csv)
+}
+const invalidChars = /[<>%\$^?.!*)(#@^{}[\]\/+=,&]/ig
+function cleanInput(input){
+    const clean = input.replaceAll(invalidChars, "_")
+    .replaceAll(/[\s]/ig, '-')
+    .replaceAll('--', '-')
+                  console.log(clean)
+    return clean
+}
+function cleanOnUpdate(evt){
+    const inputElm = evt.target
+    const val = $(inputElm).val()
+    $(inputElm).val(cleanInput(val))
+}
+function doSortRoster(){
+  const ta = $("textarea#student-data-textarea");
+  const csvText = ta.val();
+  const sorted = sortRoster(csvText)
+  setCSV(sorted)
+}
+function doUpdate(){
+    const csv =  getCSV();
+    const csvText = csv
+                      .map(row => row.join(","))
+                      .join("\n")
+    const username = checkParam($('#username-input').val())
+    const semester = checkParam($('#semester-input').val())
+    const courseName = checkParam($('#course-name-input').val())
+    if(!username || !semester || !courseName){
+        const problemIdx = [username, semester, courseName].indexOf(false)
+        const problemLabels =  ["username", "semester", "Course Name"]
+        const errMessage = problemLabels[problemIdx] + " has a problem. (Empty or invalid.) Please enter a valid " +
+                           problemLabels[problemIdx]
+        alert(errMessage)
+        return;
+    }
+    $(this).prop("disabled", true)
+    postRoster(username, semester, courseName, csvText).done((response)=>{
+      alert("saved roster for " + courseName)
+      $(this).prop("disabled", false)
+        window.location.replace(`/roster/${username}/${semester}/${courseName}`)
+    }).fail((response)=>{
+        const message = response.responseJSON.message
+        alert("error saving roster: " + message)
+        $(this).prop("disabled", false)
+    })
+}
+function rosterChanged(){
+    const ta = this;
+    const val = ta.value
+    const arr = csvText2arr(val)
+    const table = buildTable(arr)
+    $('#student-roster-display').html(table)
+}
+function postRoster(username, semester, courseName, rosterCSV){
+    const url = "/roster-update"
+    const csrf_token = $('input[name=csrf_token]').val()
+    return $.post(url, {
+        username,
+        semester,
+        courseName,
+        rosterCSV,
+        csrf_token
+    })
+}
+ 
+// MARK: CSV processing
+const {csvText2arr, buildTable, toggleSep, detectSep, sortRoster} = (function (){
+function buildTR(arr){
+    return arr.map((item) => `<td>${item}</td>`).join("")
+}
+function buildTH(arr){
+    return arr.map((item) => `<th>${item}</th>`).join("")
+}
+function buildTable(arr){
+    const headerRow = arr.shift(arr)
+    const TRs = arr.map(buildTR)
+    const trs =  TRs.map((row, i) => `<tr><th>${i+1}</th>${row}</tr>` ).join("")
+    arr.unshift(headerRow)
+    const headerTR = buildTH([" "].concat(headerRow))
+                  return `<table class="table table-sm table-bordered"><thead class="thead-light">${headerTR}</thead><tbody>${trs}</tbody></table>`
+}
+
+
+const countChar = (char, str, count) => {
+    count = count || 0;
+    const idx = str.indexOf(char);
+    if(idx > -1){
+       return countChar(char, str.slice(idx+1), count+1);
+    } else return count;
+}
+
+function detectSep(csv){
+  const rowsText = csv.split('\n');
+  const numberOfTabs   = rowsText.reduce((a,rowText)=> a+countChar("\t", rowText), 0);
+  const numberOfCommas = rowsText.reduce((a,rowText)=> a+countChar(",",  rowText), 0);
+  if(numberOfTabs>numberOfCommas){
+    return "\t";
+  }
+  else{
+    return ",";
+  }
+}
+
+function toggleSep(csv){
+    const sep = detectSep(csv)
+    const tsep = sep===',' ? "\t" : ","
+    const toggled = csv.replaceAll(sep, tsep)
+    return toggled
+}
+
+function ensureArrayLength(arr, len){
+    if(len){
+        const a2 = arr.splice(0, len)
+        if(a2.length < len){
+            const diff = len - a2.length
+                          console.log(diff)
+            const extra = new Array(diff)
+            extra.fill(null)
+            console.log(extra)
+            return a2.concat(extra)
+        }
+        return a2
+    } 
+    return arr
+}
+
+
+const arrayLen3 = (arr) => ensureArrayLength(arr, 3)
+const replaceEmpty = (arr) => {
+                  console.log(arr)
+    return arr.map(elm => {
+        if(elm === undefined || elm===null || elm === '') return '-'
+        else return elm
+    })
+} 
+
+function csvText2arr(csvText, len){
+  console.log(csvText);
+  const sep = detectSep(csvText);
+                  const rows = csvText.split("\n")
+                      .map((rowText)=>rowText.split(sep))
+                      .map(arrayLen3)
+                      .map(replaceEmpty);
+  return rows;
+}
+
+
+function sortRoster(csvText){
+  const sep = detectSep(csvText)
+  const rows = csvText2arr(csvText)
+  const headers = rows[0]
+  const rest = rows.slice(1)
+  rest.sort()
+  rest.unshift(headers)
+  return rest.map(row => row.join(sep)).join("\n")
+}
+
+return {
+    csvText2arr: csvText2arr,
+    buildTable: buildTable,
+    toggleSep: toggleSep,
+    detectSep: detectSep,
+    sortRoster: sortRoster
+}
+})();
+</script>
+{% endblock %}

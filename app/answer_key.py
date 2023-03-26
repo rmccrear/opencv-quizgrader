@@ -4,9 +4,10 @@ from flask import render_template, request, redirect, url_for
 from flask_login import login_required, current_user
 import json
 
-from quizitemfinder.io import create_quiz_directory_structure, header_im_path, count_headers, count_sheets, get_roster, set_student_ids_for_quiz, get_student_ids_for_quiz, set_scores_for_quiz, get_scores_for_quiz, get_answer_key, save_answer_key, get_corrections, error_sheet_path, error_corrected_sheet_path, get_sheets_with_errors, find_sheet_dims, is_quiz_finished, set_score_for_items
-from quizitemfinder.process_quiz import do_process_quiz
-from quizitemfinder.process_graded_sheets import save_graded_sheets_for_quiz, convert_graded_to_pdf
+from quizitemfinder.io import get_answer_key, save_answer_key, get_item_count
+# from quizitemfinder.io import create_quiz_directory_structure, header_im_path, count_headers, count_sheets, get_roster, set_student_ids_for_quiz, get_student_ids_for_quiz, set_scores_for_quiz, get_scores_for_quiz, get_answer_key, save_answer_key, get_corrections, error_sheet_path, error_corrected_sheet_path, get_sheets_with_errors, find_sheet_dims, is_quiz_finished, set_score_for_items
+# from quizitemfinder.process_quiz import do_process_quiz
+# from quizitemfinder.process_graded_sheets import save_graded_sheets_for_quiz, convert_graded_to_pdf
 
 
 
@@ -29,11 +30,12 @@ def bounding_box_to_dims(bounding_box):
     }
 
 
-def get_item_count(username, quiz_name):
-    corrections = get_corrections(username, quiz_name)
-    sheet_count = len(corrections)
-    item_count = len(corrections[0])
-    return item_count
+
+# def get_item_count(username, quiz_name):
+#     corrections = get_corrections(username, quiz_name)
+#     sheet_count = len(corrections)
+#     item_count = len(corrections[0])
+#     return item_count
 
 
 
@@ -73,7 +75,6 @@ def setup_answer_key(app):
             have_saved_answer_key = True
     
         bounding_boxes = get_bounding_boxes_for_quiz(username, quiz_name) 
-    
         for item_no in range(item_count):
             ans = answer_key[item_no] if item_no < len(answer_key) else ''
             items.append( {'src': "/item-img/{}/{}/{}/{}".format(username, quiz_name, sheet_no, item_no),

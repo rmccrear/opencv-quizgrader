@@ -4,14 +4,29 @@ import csv
 from PIL import Image, ImageDraw, ImageFont
 import subprocess
 
-import fontconfig
+# import fontconfig
 
 import quizitemfinder.io as io
 
-# FONT_PATH = path.join('/System/Library/Fonts', 'NoteWorthy.ttc')
+FONT_PATH = path.join('/System/Library/Fonts', 'NoteWorthy.ttc')
 DATA_PATH = path.join('/Users/robertmccreary/Documents/code/proj/python/quiz_grader_server_python/score_data')
 
+import matplotlib.font_manager as fm
+#FM = fm.FontManager()
 font_preference = ['NoteWorthy', 'Gamja Flower', 'arial', '']
+FM = fm.FontManager()
+
+
+
+def get_font_path2(font_preference=font_preference):
+    font_pref = font_preference[0]
+    for font_pref in font_preference:
+      fontpath = FM.findfont(font_pref)
+      fontname = fm.FontProperties(fname=fontpath).get_name()
+      if(lower(fontname) == lower(font_pref)):
+          return fontpath
+
+
 def get_font_path(font_preference=font_preference):
     path = None
     n = 0
@@ -27,7 +42,7 @@ def get_font_path(font_preference=font_preference):
     if(path is None):
         raise Exception('Could not find font. Tried [{}]'.format(", ".join(font_preference)))
     return path
-FONT_PATH = get_font_path()
+# FONT_PATH = get_font_path()
 
 
 def score_position_and_font_size(username, quiz_name):
@@ -35,7 +50,7 @@ def score_position_and_font_size(username, quiz_name):
     bb_top  = bb[1]
     bb_left = bb[0]
     bb_height = bb[3] - bb[1]
-    
+
     #font_size = 2
     target_pixels_size = bb_height/2                 # half of box height
     #font = ImageFont.truetype(FONT_PATH, font_size)
@@ -44,7 +59,7 @@ def score_position_and_font_size(username, quiz_name):
     #    font = ImageFont.truetype(FONT_PATH, font_size)
     #font_size -= 1
     font_size = calc_font_size_for_height_in_px(FONT_PATH, target_pixels_size)
-    
+
     score_pos = [bb_left + 2, bb_top - int(target_pixels_size*2)]
     return {
         "score_pos": score_pos,
@@ -52,7 +67,9 @@ def score_position_and_font_size(username, quiz_name):
     }
 
 def student_id_position_and_font_size(username, quiz_name, student_id_header_no):
-    bb = get_header_boxes_for_quiz(username, quiz_name)[2]
+    header_boxes = get_header_boxes_for_quiz(username, quiz_name)
+    header_length = len(header_boxes)
+    bb = header_boxes[header_length-1]
     bb_top     = find_top_of_box(bb)
     bb_left    = find_left_of_box(bb)
     bb_bottom  = find_bottom_of_box(bb)
@@ -65,13 +82,13 @@ def student_id_position_and_font_size(username, quiz_name, student_id_header_no)
     #    font = ImageFont.truetype(FONT_PATH, font_size)
     #font_size -= 1
     font_size = calc_font_size_for_height_in_px(FONT_PATH, target_pixels_size)
-    
+
     #pos = [bb_left + 2, bb_top - int(target_pixels_size*2)]
     pos = [bb_left + 5, bb_bottom + int(target_pixels_size/2)]
     return {
         "pos": pos,
         "font_size": font_size
-    }  
+    }
 
 # utility function to add two points together
 def add_pts(a, b):
@@ -98,7 +115,7 @@ def marking_position_and_font_size(username, quiz_name):
     bb_left = bb[0]
     bb_height = find_height_of_box(bb) # bb[3] - bb[1]
     bb_width  = find_width_of_box(bb) # bb[2] - bb[0]
-    
+
     font_size = 2
     target_pixels_size = bb_height/2            # half of box height
     font = ImageFont.truetype(FONT_PATH, font_size)
@@ -106,7 +123,7 @@ def marking_position_and_font_size(username, quiz_name):
         font_size += 1
         font = ImageFont.truetype(FONT_PATH, font_size)
     font_size -= 1
-    
+
     font_height = font.getsize("X")[1]
     font_width = font.getsize("X")[0]
     return {
@@ -239,9 +256,9 @@ def draw_student_id(sheet_img, student_id, position, font_size):
     draw = ImageDraw.Draw(sheet_img)
     # get a font
     font = ImageFont.truetype(FONT_PATH, font_size)
-    draw.text(position, "{}".format(student_id), font=font, fill="black")  
+    draw.text(position, "{}".format(student_id), font=font, fill="black")
     del draw
-    
+
 #def calculate_score(corrections):
 #    # weights
 #    count = len(corrections[2:])
@@ -283,12 +300,12 @@ def convert_graded_to_pdf(username, quiz_name):
     cmd = ['img2pdf', '--output', 'graded-overlays.pdf']
     cmd.extend(img_paths)
     subprocess.call(cmd, cwd=dir_path)
-    
+
     cmd = ['img2pdf', '--output', 'graded-overlays-reversed.pdf']
     cmd.extend(reversed(img_paths))
     subprocess.call(cmd, cwd=dir_path)
-    
-    
+
+
     dir_path = path.join(quiz_dir, 'sheets-graded', 'graded-sheets')
     sheet_count = get_sheet_count(username, quiz_name)
     img_paths = []
@@ -299,4 +316,4 @@ def convert_graded_to_pdf(username, quiz_name):
     cmd = ['img2pdf', '--output', 'graded-sheets.pdf']
     cmd.extend(img_paths)
     subprocess.call(cmd, cwd=dir_path)
-    
+

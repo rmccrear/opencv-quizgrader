@@ -90,6 +90,12 @@ Resubmit Quiz if you make any changes: <a class="btn btn-outline-dark submit-but
 <p>
 Finish Quiz when grading is complete: <a class="btn btn-outline-dark submit-button" href="/finish-quiz/{{username}}/{{quiz_name}}#access-results"> submit </a> <span class="text-muted"> (May take a few minutes) <span>
 </p>
+<p>
+CSV score spreadsheet: <a href="/quiz-scores/{{username}}/{{quiz_name}}.csv"> CSV </a>
+</p>
+<p>
+  Statistics: <a href="{{ url_for('stats_for_quiz', username=username, quiz_name=quiz_name) }}"> stats </a>
+</p>
 {% else %}
 <p>
   (Finish steps one and two first.)

@@ -11,16 +11,31 @@
 <form id="new-form" method="POST" enctype="multipart/form-data">
   <div class="form-group">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <input type="hidden" name="username" id="username-input"  value="{{ username }}"/>
     <label>Semester:</label>
-    <input type="text" class="form-text" name="semester" placeholder="semester e.g. 106-2">
+    <input type="text" class="form-text" name="semester" id="semester-input" placeholder="semester e.g. 106-2">
+    {% if semesters %}
+      <select id="semester-select">
+        <option value=""> Choose semester </option>
+      {% for semester in semesters %}
+        <option value="{{semester}}"> {{ semester }} </option>
+      {% endfor%}
+      </select>
+    {% endif %}
   </div>
   <div class="form-group">
     <label>Course Name:</label>
-    <input type="text" class="form-text" name="course_name" placeholder="course name">
+    <input type="text" class="form-text" name="course_name" id="course-input" placeholder="course name">
+    {% if semesters %}
+      <select id="course-select">
+          <option value=""> Courses </option>
+      </select>
+    {% endif %}
   </div>
   <div class="form-group">
     <label>Quiz Name: </label>
-    <input type="text" class="form-text" name="quiz_name" placeholder="Quiz Name">
+    <input type="text" class="form-text" name="quiz_name" id="quiz-name-input" placeholder="Quiz Name" style="display: inline">
+    <span id="quiz-list"></span>
   </div>
 
   <div class="form-group">
@@ -57,22 +72,154 @@
     </div>
   </div>
 </form>
+<button id="submit-pdf-btn" class="btn">Submit PDF only</button>
 <script src="/static/vendor/jquery.js"></script>
 <script>
+
+function setCourseSelect(courses){
+        const courseSelect = document.getElementById('course-select')
+        const courseOptions = courses.map(courseName => {
+                return $(`<option value='${courseName}'>${courseName}</option>`)
+        })
+        const opt0 = $('<option value=""> Courses </option>')
+        const opts = [opt0].concat(courseOptions)
+        $(courseSelect).html(opts)
+        //$(courseSelect).html('')
+        //$(courseSelect).append(opts)
+}
+
+async function fetchCourses(username, semester){
+        const csrf = document.querySelector('[name=csrf_token]').value
+        const response = await fetch(`/my-courses/${username}/${semester}`, {
+                method: 'POST',
+                credentials: 'same-origin', // include, *same-origin, omit
+                headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrf
+                },
+                body: JSON.stringify({username: '{{username}}', semester: '{{semester}}'})
+            })
+        const courses = await response.json();
+        return courses;
+}
+
+const cachedQuizzes = {};
+async function fetchQuizzes(username, semester, course){
+  // /my-quizzes-for-course/<username>/<semester>/<course>
+    const args = JSON.stringify(arguments)
+    if(cachedQuizzes[args]){
+      return cachedQuizzes[args]
+    }
+    else {
+      const csrf = document.querySelector('[name=csrf_token]').value
+        const response = await fetch(`/my-quizzes-for-course/${username}/${semester}/${course}`, {
+                method: 'POST',
+                credentials: 'same-origin', // include, *same-origin, omit
+                headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrf
+                },
+                body: JSON.stringify({username: username, semester: semester, course: course})
+            })
+        const quizzes = await response.json();
+        cachedQuizzes[args] = quizzes;
+        return quizzes;
+    } 
+}
+
+document.getElementById('course-select').onchange = async function(evt) {
+    if(this.value){
+        document.getElementById('course-input').value = this.value
+    }
+}
+document.getElementById('semester-select').onchange = async function(evt) {
+    if(this.value){
+        document.getElementById('semester-input').value = this.value
+        const courses = await fetchCourses('{{username}}', this.value)
+        setCourseSelect(courses)
+    }
+}
+document.getElementById('course-select').onchange = async function(evt) {
+  // const course = document.getElementById('course-input').value
+  const semester = document.getElementById('semester-input').value
+  if(this.value){
+    document.getElementById('course-input').value = this.value
+    listQuizzes()
+  }
+}
+document.getElementById('quiz-name-input').oninput = async function(evt) {
+  listQuizzes();
+}
+
+function sanityCheckName(n){
+  return /^[\w-]+$/.test(n)
+}
+
+function redSpanName(prefix, name) {
+  const re = RegExp("^" + prefix + "([\\w-]*)$");
+  if(re.test(name) && sanityCheckName(prefix)){
+    return "<span style='color: red;'>" + prefix + "</span>" + name.match(re)[1]
+  }
+  else{
+    return name
+  }
+}
+
+async function listQuizzes(){
+    const semester = document.getElementById('semester-input').value
+    const course = document.getElementById('course-input').value
+    const quizzes = await fetchQuizzes('{{username}}', semester, course)
+    const quizName = document.getElementById('quiz-name-input').value
+    const html = "<small> Quizzes: " + quizzes.filter(sanityCheckName).map((n) => redSpanName(quizName, n)).join(", ") + "<\small>"
+    quizListElm = document.getElementById('quiz-list')
+    quizListElm.innerHTML = html
+}
+
+async function checkFileName(semester, courseName, quizName){
+    const csrf = document.querySelector('[name=csrf_token]').value
+    const semesterSelect = document.getElementById('semester-select')
+    const semesterInput = document.getElementById('semester-input')
+    const courseSelect = document.getElementById('course-select')
+    const courseInput = document.getElementById('course-input')
+    const quizNameInput = document.getElementById('quiz-name-input')
+    const semesters = Array.from($(semesterSelect).find('option').map(function(){
+         return this.value
+    }))
+    if(semesters.find(sem => sem === semester)){
+        semesterSelect.value = semester
+        semesterInput.value = semester
+        const courses = await fetchCourses('{{username}}', semester)
+        setCourseSelect(courses) 
+        if(courses.find(c => c===courseName)){
+            courseInput.value = courseName
+            courseSelect.value = courseName
+            quizNameInput.value = quizName
+            listQuizzes()
+        }
+    }
+}
+  
 // automatically extract semester, course, and quiz name from filename
 // for example: SEMESTER--COURSE--QUIZNAME.pdf
 document.getElementById('file-input').onchange = function (evt) {
   alert(evt.target.files[0].name)
   const filename = evt.target.files[0].name;
   const parts = filename.split('--')
-  console.log(parts)
   if(parts.length === 3){
     const semester = parts[0];
     const course_name = parts[1];
     const quiz_name = parts[2].slice(0, -4); // remove '.pdf' from end of string
-    document.getElementsByName('semester')[0].value = semester;
-    document.getElementsByName('course_name')[0].value = course_name;
-    document.getElementsByName('quiz_name')[0].value = quiz_name;
+    const ext = parts[2].slice(-3)
+    if(ext === 'pdf'){
+        checkFileName(semester, course_name, quiz_name)
+    }
+    else {
+        alert('not a pdf, please upload a pdf.')
+    }
+     
+    //document.getElementsByName('semester')[0].value = semester;
+    //document.getElementsByName('course_name')[0].value = course_name;
+    //document.getElementsByName('quiz_name')[0].value = quiz_name;
   }
 };
 function start_progress_bar (){
@@ -87,4 +234,39 @@ document.getElementById('new-form').onsubmit = function (evt) {
   document.getElementById('submit-message').innerHTML = 'Please wait while your quiz is processed...This may take a few minutes.';
   start_progress_bar()
 };
+
+function sendForm(url, form){
+  console.log('send form')
+  return $.ajax({
+        url: url,
+        type: 'POST',
+        dataType: "JSON",
+        data: new FormData(form),
+        processData: false,
+        contentType: false,
+        success: function (data, status)
+        {
+          console.log(data)
+        },
+        error: function (xhr, desc, err)
+        {
+            console.log(err)
+
+        }
+    }); 
+
+}
+
+function submitPDF(e){
+  e.preventDefault();
+  console.log('submitPDF')
+  const username = document.getElementById('username-input').value;
+  const semester = document.getElementById('semester-input').value;
+  const course = document.getElementById('course-input').value;
+  const quiz_name = document.getElementById('quiz-name-input').value;
+  const url = `/api/v1/submit-pdf/${username}/${semester}/${course}/${quiz_name}`
+  const form = document.getElementById('new-form')
+  sendForm(url, form)
+}
+document.getElementById("submit-pdf-btn").onclick = submitPDF
 </script>

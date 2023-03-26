@@ -1,0 +1,30 @@
+<!doctype html>
+
+<html>
+  <head>
+  <meta charset="utf-8">
+  <script
+  src="https://code.jquery.com/jquery-3.6.0.min.js"
+  integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+  crossorigin="anonymous"></script>
+  <script>
+    $(function(){
+      const urlParams = new URLSearchParams(window.location.search);
+      const quizId = urlParams.get('quiz_id');
+      const stuId = urlParams.get('stu_id');
+      $('#student-id').val(stuId);
+
+      $('#submit-student-id').click(function(){
+        const studentId = $('#student-id').val();
+        const rand = Math.random();
+        window.location.href = `https://s3.amazonaws.com/graded-quizzes/rmcc/${quizId}/${studentId}.jpg?r=${rand}`;
+      });
+    });
+  </script>
+  </head>
+  <body>
+    學號：<input id="student-id" value="1090" type=text>
+    <button id="submit-student-id"> see score</button>
+  </body>
+</html>
+
